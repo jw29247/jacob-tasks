@@ -265,25 +265,25 @@ export const getSchedule = query({
       const taskStartDate = new Date(currentDate);
       let taskEndDate: Date | null = null;
       let workingDate = new Date(currentDate);
+      let remainingHoursOnDay = getAvailableHours(workingDate);
       
       while (hoursRemaining > 0) {
-        const availableHours = getAvailableHours(workingDate);
-        
-        if (availableHours > 0) {
-          const hoursToWork = Math.min(hoursRemaining, availableHours);
+        if (remainingHoursOnDay > 0) {
+          const hoursToWork = Math.min(hoursRemaining, remainingHoursOnDay);
           hoursRemaining -= hoursToWork;
+          remainingHoursOnDay -= hoursToWork;
           
-          if (!taskEndDate) {
-            taskEndDate = new Date(workingDate);
-          }
-          // Update end date to current working date as we progress
           taskEndDate = new Date(workingDate);
         }
         
-        workingDate.setDate(workingDate.getDate() + 1);
+        // Only move to next day if we've used all hours on current day
+        if (remainingHoursOnDay <= 0) {
+          workingDate.setDate(workingDate.getDate() + 1);
+          remainingHoursOnDay = getAvailableHours(workingDate);
+        }
       }
       
-      // Move currentDate forward for next task
+      // Update currentDate for next task (preserves remaining time on day)
       currentDate = new Date(workingDate);
       
       schedule.push({
