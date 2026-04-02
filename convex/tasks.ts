@@ -174,10 +174,128 @@ export const list = query({
       const daysUntilDue = (effectiveDueDate - now) / (1000 * 60 * 60 * 24);
       score += 5000 * Math.exp(-Math.max(0, daysUntilDue) / 5);
       
+      // Time pressure: if due date is close and task is large, prioritize higher
+      const hoursOfWork = (task.timeEstimate || 60) / 60; // convert to hours
+      const hoursUntilDue = (effectiveDueDate - now) / (1000 * 60 * 60);
+      
+      // If work exceeds available time, boost urgency significantly
+      if (hoursUntilDue > 0 && hoursOfWork > hoursUntilDue * 0.5) {
+        // Task needs significant portion of remaining time
+        score += (hoursOfWork / hoursUntilDue) * 500;
+      }
+      
       return score;
     };
     
     return tasks.sort((a, b) => getUrgencyScore(b) - getUrgencyScore(a));
+  },
+});
+
+// Get schedule with predicted completion dates
+export const getSchedule = query({
+  handler: async (ctx) => {
+    const tasks = await ctx.db.query("tasks").collect();
+    const now = Date.now();
+    
+    type TaskDoc = typeof tasks[0];
+    
+    // Define getUrgencyScore for sorting
+    const getUrgencyScore = (task: TaskDoc): number => {
+      if (task.status === "done") return -50000;
+      if (task.startDate && task.startDate > now) return -10000;
+      
+      const fallbackDays = { critical: 3, high: 7, medium: 14, low: 28 };
+      const effectiveDueDate = task.dueDate ?? (now + fallbackDays[task.priority] * 24 * 60 * 60 * 1000);
+      
+      if (effectiveDueDate < now) {
+        const daysOverdue = (now - effectiveDueDate) / (1000 * 60 * 60 * 24);
+        return 100000 - daysOverdue * 100;
+      }
+      
+      const priorityBase = { critical: 4000, high: 3000, medium: 2000, low: 1000 };
+      const deadlineMult = { hard: 1.5, soft: 1.0 };
+      
+      let score = priorityBase[task.priority] * deadlineMult[task.deadlineType];
+      
+      const daysUntilDue = (effectiveDueDate - now) / (1000 * 60 * 60 * 24);
+      score += 5000 * Math.exp(-Math.max(0, daysUntilDue) / 5);
+      
+      const hoursOfWork = (task.timeEstimate || 60) / 60;
+      const hoursUntilDueCalc = (effectiveDueDate - now) / (1000 * 60 * 60);
+      
+      if (hoursUntilDueCalc > 0 && hoursOfWork > hoursUntilDueCalc * 0.5) {
+        score += (hoursOfWork / hoursUntilDueCalc) * 500;
+      }
+      
+      return score;
+    };
+    
+    // Filter to non-completed tasks, already sorted by urgency
+    const activeTasks = tasks
+      .filter(t => t.status !== "done")
+      .sort((a, b) => getUrgencyScore(b) - getUrgencyScore(a));
+    
+    // Calculate available hours per day
+    const getAvailableHours = (date: Date) => {
+      const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+      
+      // Weekend: 9am-6pm = 9 hours
+      if (day === 0 || day === 6) return 9;
+      // Weekday: 4pm-8pm = 4 hours
+      return 4;
+    };
+    
+    // Schedule tasks
+    const schedule = [];
+    let currentDate = new Date(now);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    // Skip to next available time (after current time if weekday before 8pm, or next day)
+    const currentHour = new Date(now).getHours();
+    const currentDay = new Date(now).getDay();
+    if (currentHour >= 20 || (currentHour < 16 && currentDay >= 1 && currentDay <= 5)) {
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setHours(0, 0, 0, 0);
+    }
+    
+    for (const task of activeTasks) {
+      const hoursNeeded = (task.timeEstimate || 60) / 60;
+      let hoursRemaining = hoursNeeded;
+      const taskStartDate = new Date(currentDate);
+      let taskEndDate: Date | null = null;
+      let workingDate = new Date(currentDate);
+      
+      while (hoursRemaining > 0) {
+        const availableHours = getAvailableHours(workingDate);
+        
+        if (availableHours > 0) {
+          const hoursToWork = Math.min(hoursRemaining, availableHours);
+          hoursRemaining -= hoursToWork;
+          
+          if (!taskEndDate) {
+            taskEndDate = new Date(workingDate);
+          }
+          // Update end date to current working date as we progress
+          taskEndDate = new Date(workingDate);
+        }
+        
+        workingDate.setDate(workingDate.getDate() + 1);
+      }
+      
+      // Move currentDate forward for next task
+      currentDate = new Date(workingDate);
+      
+      schedule.push({
+        task,
+        predictedStartDate: taskStartDate.getTime(),
+        predictedEndDate: taskEndDate!.getTime(),
+        willMissDeadline: task.dueDate ? taskEndDate!.getTime() > task.dueDate : false,
+        deadlineType: task.deadlineType
+      });
+    }
+    
+    return schedule;
   },
 });
 

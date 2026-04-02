@@ -12,7 +12,8 @@ import { Plus } from "lucide-react";
 import { Task, Priority, DeadlineType, List, Status } from "@/types/task";
 
 export default function Home() {
-  const tasks = useQuery(api.tasks.list);
+  const schedule = useQuery(api.tasks.getSchedule);
+  const tasks = schedule?.map(s => s.task);
   const createTask = useMutation(api.tasks.create);
   const updateTask = useMutation(api.tasks.update);
   const deleteTask = useMutation(api.tasks.remove);
@@ -75,6 +76,10 @@ export default function Home() {
   // Count active tasks
   const activeTasks = tasks?.filter((t: Task) => t.status !== "done").length || 0;
 
+  // Check for missed deadlines
+  const hardDeadlinesMissed = schedule?.filter(s => s.willMissDeadline && s.deadlineType === "hard") || [];
+  const softDeadlinesMissed = schedule?.filter(s => s.willMissDeadline && s.deadlineType === "soft") || [];
+
   const listOptions: { value: List | "all"; emoji: string }[] = [
     { value: "all", emoji: "📋" },
     { value: "personal", emoji: "👤" },
@@ -85,6 +90,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       <div className="max-w-3xl mx-auto p-4 md:p-6">
+        {/* Warning Banners */}
+        {hardDeadlinesMissed.length > 0 && (
+          <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded mb-4">
+            ⚠️ <strong>{hardDeadlinesMissed.length} tasks will miss hard deadlines</strong>
+          </div>
+        )}
+        {softDeadlinesMissed.length > 0 && (
+          <div className="bg-yellow-500/20 border border-yellow-500 text-yellow-200 px-4 py-3 rounded mb-4">
+            ⚠️ {softDeadlinesMissed.length} tasks will miss soft deadlines
+          </div>
+        )}
+        
         {/* Compact Header */}
         <div className="flex items-center gap-2 mb-4">
           {/* Search - 60% width on mobile, 40% on desktop */}
@@ -142,13 +159,14 @@ export default function Home() {
         )}
 
         {/* Task List */}
-        {tasks === undefined ? (
+        {schedule === undefined ? (
           <div className="text-center py-12 text-[#a1a1a1]">
             Loading tasks...
           </div>
         ) : (
           <TaskList
-            tasks={tasks}
+            tasks={tasks || []}
+            schedule={schedule}
             onToggle={handleToggle}
             onEdit={handleEdit}
             onDelete={handleDelete}

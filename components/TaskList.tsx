@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Task, Priority, DeadlineType, List, Status } from "@/types/task";
+import { Task, Priority, DeadlineType, List, Status, ScheduleEntry } from "@/types/task";
 import {
   DndContext,
   closestCenter,
@@ -35,6 +35,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 interface TaskListProps {
   tasks: Task[];
+  schedule?: ScheduleEntry[];
   onToggle: (id: string) => void;
   onEdit: (task: Task, updates: {
     title: string;
@@ -69,9 +70,11 @@ interface SortableTaskProps {
     status: Status;
   }) => void;
   onDelete: (id: string) => void;
+  predictedEndDate?: number;
+  willMissDeadline?: boolean;
 }
 
-function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDelete }: SortableTaskProps) {
+function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDelete, predictedEndDate, willMissDeadline }: SortableTaskProps) {
   const {
     attributes,
     listeners,
@@ -118,6 +121,8 @@ function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDe
           onToggle={onToggle}
           onEdit={onEdit}
           onDelete={onDelete}
+          predictedEndDate={predictedEndDate}
+          willMissDeadline={willMissDeadline}
         />
       </div>
     </div>
@@ -126,6 +131,7 @@ function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDe
 
 export function TaskList({
   tasks,
+  schedule,
   onToggle,
   onEdit,
   onDelete,
@@ -260,6 +266,16 @@ export function TaskList({
   };
 
   const displayTasks = localTasks.length > 0 ? localTasks : sortedTasks;
+  
+  // Helper to get schedule data for a task
+  const getScheduleForTask = (taskId: string) => {
+    if (!schedule) return {};
+    const entry = schedule.find(s => s.task._id === taskId);
+    return {
+      predictedEndDate: entry?.predictedEndDate,
+      willMissDeadline: entry?.willMissDeadline
+    };
+  };
 
   return (
     <div className="space-y-3">
@@ -345,17 +361,22 @@ export function TaskList({
                 <p className="text-sm">No tasks match your filters</p>
               </div>
             ) : (
-              displayTasks.map((task) => (
-                <SortableTask
-                  key={task._id}
-                  task={task}
-                  isSelected={selectedIds.has(task._id)}
-                  onToggleSelect={toggleSelect}
-                  onToggle={onToggle}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                />
-              ))
+              displayTasks.map((task) => {
+                const { predictedEndDate, willMissDeadline } = getScheduleForTask(task._id);
+                return (
+                  <SortableTask
+                    key={task._id}
+                    task={task}
+                    isSelected={selectedIds.has(task._id)}
+                    onToggleSelect={toggleSelect}
+                    onToggle={onToggle}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    predictedEndDate={predictedEndDate}
+                    willMissDeadline={willMissDeadline}
+                  />
+                );
+              })
             )}
           </div>
         </SortableContext>

@@ -18,3 +18,11 @@ export interface Task {
   createdAt: number;
   createdBy?: string;
 }
+
+export interface ScheduleEntry {
+  task: Task;
+  predictedStartDate: number;
+  predictedEndDate: number;
+  willMissDeadline: boolean;
+  deadlineType: DeadlineType;
+}

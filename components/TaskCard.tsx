@@ -51,6 +51,8 @@ interface TaskCardProps {
   }) => void;
   onDelete: (id: string) => void;
   isEditing?: boolean;
+  predictedEndDate?: number;
+  willMissDeadline?: boolean;
 }
 
 function formatDate(timestamp: number | undefined): string {
@@ -86,7 +88,7 @@ function formatTimeEstimate(minutes: number | undefined): string {
   return `${hours.toFixed(1)}h`;
 }
 
-export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCardProps) {
+export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing, predictedEndDate, willMissDeadline }: TaskCardProps) {
   const [editTitle, setEditTitle] = useState(task.title);
   const [editDescription, setEditDescription] = useState(task.description || "");
   const [editDueDate, setEditDueDate] = useState(
@@ -445,6 +447,17 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
                 <Clock className="h-3 w-3" />
                 <span>{formatDate(task.dueDate)}</span>
                 {isOverdue && <span className="text-red-400"> (Overdue)</span>}
+              </div>
+            )}
+            
+            {predictedEndDate && task.status !== "done" && (
+              <div className="text-xs text-[#a1a1a1]">
+                📅 Predicted: {new Date(predictedEndDate).toLocaleDateString("en-GB", {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short"
+                })}
+                {willMissDeadline && <span className="text-red-400 ml-1">(⚠️ misses deadline)</span>}
               </div>
             )}
           </div>
