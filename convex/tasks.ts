@@ -150,9 +150,13 @@ export const list = query({
       // Not yet started
       if (task.startDate && task.startDate > now) return -10000;
       
+      // Fallback due dates for scoring (if not set)
+      const fallbackDays = { critical: 3, high: 7, medium: 14, low: 28 };
+      const effectiveDueDate = task.dueDate ?? (now + fallbackDays[task.priority] * 24 * 60 * 60 * 1000);
+      
       // Overdue
-      if (task.dueDate && task.dueDate < now) {
-        const daysOverdue = (now - task.dueDate) / (1000 * 60 * 60 * 24);
+      if (effectiveDueDate < now) {
+        const daysOverdue = (now - effectiveDueDate) / (1000 * 60 * 60 * 24);
         return 100000 - daysOverdue * 100;
       }
       
@@ -162,10 +166,8 @@ export const list = query({
       
       let score = priorityBase[task.priority] * deadlineMult[task.deadlineType];
       
-      if (task.dueDate) {
-        const daysUntilDue = (task.dueDate - now) / (1000 * 60 * 60 * 24);
-        score += 5000 * Math.exp(-Math.max(0, daysUntilDue) / 5);
-      }
+      const daysUntilDue = (effectiveDueDate - now) / (1000 * 60 * 60 * 24);
+      score += 5000 * Math.exp(-Math.max(0, daysUntilDue) / 5);
       
       return score;
     };
