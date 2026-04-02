@@ -21,24 +21,32 @@ const weddings = [
 ];
 
 // Deliverable timelines (days relative to wedding)
-const deliverables = {
+const deliverables: Record<string, { daysAfter: number; priority: "critical" | "high" | "medium"; deadline: "hard" | "soft" }> = {
   "Copy Footage": { daysAfter: 2, priority: "critical", deadline: "hard" },
   "Highlight": { daysAfter: 13, priority: "high", deadline: "hard" },
   "Full": { daysAfter: 55, priority: "high", deadline: "hard" },
   "QA & Send": { daysAfter: 55, priority: "medium", deadline: "soft" },
 };
 
-function dateToTimestamp(dateStr) {
+function dateToTimestamp(dateStr: string): number {
   return new Date(dateStr).getTime();
 }
 
-function addDays(date, days) {
+function addDays(date: Date, days: number): string {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
   return result.toISOString().split("T")[0];
 }
 
-async function createTask(task) {
+async function createTask(task: {
+  title: string;
+  description?: string;
+  dueDate?: number;
+  startDate?: number;
+  priority: "critical" | "high" | "medium" | "low";
+  deadlineType: "hard" | "soft";
+  list?: "personal" | "weddings" | "house";
+}) {
   const response = await fetch(`${CONVEX_SITE_URL}/api/tasks/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -70,7 +78,7 @@ async function listTasks() {
   return data.tasks || [];
 }
 
-async function deleteTask(id) {
+async function deleteTask(id: string) {
   await fetch(`${CONVEX_SITE_URL}/api/tasks/delete`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -95,19 +103,19 @@ async function main() {
   
   // Seed non-wedding tasks
   const otherTasks = [
-    { title: "Reply to Pippa", dueDate: dateToTimestamp("2026-04-02"), priority: "critical", deadlineType: "hard", list: "personal", description: "Reply tonight" },
-    { title: "Prepare tools for downstairs toilet", dueDate: dateToTimestamp("2026-04-02"), priority: "critical", deadlineType: "hard", list: "house", description: "Get all tools ready for tomorrow's work" },
-    { title: "Pack for Maldives", dueDate: dateToTimestamp("2026-04-07"), priority: "high", deadlineType: "soft", list: "personal", description: "Honeymoon packing — passport, tickets, clothes" },
-    { title: "File JAW Media company accounts", dueDate: dateToTimestamp("2026-10-30"), priority: "high", deadlineType: "hard", list: "personal" },
-    { title: "Drone flyer and operator ID update", dueDate: dateToTimestamp("2026-03-27"), priority: "medium", deadlineType: "soft", list: "personal" },
-    { title: "Check HMRC fine", priority: "high", deadlineType: "hard", list: "personal", description: "Check if there's an HMRC fine and resolve" },
-    { title: "Tax return", priority: "high", deadlineType: "hard", list: "personal", description: "Complete and submit tax return" },
-    { title: "Finish tidying garage", priority: "medium", deadlineType: "soft", list: "house", description: "Several hours (3-5 hrs) — split across sessions" },
-    { title: "Tidy junk bedroom", priority: "medium", deadlineType: "soft", list: "house", description: "~1 hour" },
-    { title: "Build extra chairs", dueDate: dateToTimestamp("2026-03-20"), priority: "medium", deadlineType: "soft", list: "house" },
-    { title: "Living spotlights and soles", dueDate: dateToTimestamp("2026-03-31"), priority: "medium", deadlineType: "soft", list: "house" },
-    { title: "Organise hangers for suits (Healing Manor)", dueDate: dateToTimestamp("2026-05-25"), priority: "low", deadlineType: "soft", list: "personal", description: "~1 hour — plenty of time before wedding" },
-    { title: "Sophie — Post-Wedding Edits", dueDate: dateToTimestamp("2026-04-06"), priority: "medium", deadlineType: "soft", list: "weddings" },
+    { title: "Reply to Pippa", dueDate: dateToTimestamp("2026-04-02"), priority: "critical" as const, deadlineType: "hard" as const, list: "personal" as const, description: "Reply tonight" },
+    { title: "Prepare tools for downstairs toilet", dueDate: dateToTimestamp("2026-04-02"), priority: "critical" as const, deadlineType: "hard" as const, list: "house" as const, description: "Get all tools ready for tomorrow's work" },
+    { title: "Pack for Maldives", dueDate: dateToTimestamp("2026-04-07"), priority: "high" as const, deadlineType: "soft" as const, list: "personal" as const, description: "Honeymoon packing — passport, tickets, clothes" },
+    { title: "File JAW Media company accounts", dueDate: dateToTimestamp("2026-10-30"), priority: "high" as const, deadlineType: "hard" as const, list: "personal" as const },
+    { title: "Drone flyer and operator ID update", dueDate: dateToTimestamp("2026-03-27"), priority: "medium" as const, deadlineType: "soft" as const, list: "personal" as const },
+    { title: "Check HMRC fine", priority: "high" as const, deadlineType: "hard" as const, list: "personal" as const, description: "Check if there's an HMRC fine and resolve" },
+    { title: "Tax return", priority: "high" as const, deadlineType: "hard" as const, list: "personal" as const, description: "Complete and submit tax return" },
+    { title: "Finish tidying garage", priority: "medium" as const, deadlineType: "soft" as const, list: "house" as const, description: "Several hours (3-5 hrs) — split across sessions" },
+    { title: "Tidy junk bedroom", priority: "medium" as const, deadlineType: "soft" as const, list: "house" as const, description: "~1 hour" },
+    { title: "Build extra chairs", dueDate: dateToTimestamp("2026-03-20"), priority: "medium" as const, deadlineType: "soft" as const, list: "house" as const },
+    { title: "Living spotlights and soles", dueDate: dateToTimestamp("2026-03-31"), priority: "medium" as const, deadlineType: "soft" as const, list: "house" as const },
+    { title: "Organise hangers for suits (Healing Manor)", dueDate: dateToTimestamp("2026-05-25"), priority: "low" as const, deadlineType: "soft" as const, list: "personal" as const, description: "~1 hour — plenty of time before wedding" },
+    { title: "Sophie — Post-Wedding Edits", dueDate: dateToTimestamp("2026-04-06"), priority: "medium" as const, deadlineType: "soft" as const, list: "weddings" as const },
   ];
   
   for (const task of otherTasks) {
