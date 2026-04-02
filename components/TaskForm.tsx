@@ -77,64 +77,64 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
   };
 
   return (
-    <Card className="p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <Card className="p-3 bg-[#141414] border-[#1f1f1f]">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <Label htmlFor="title">Task Title *</Label>
+          <Label htmlFor="title" className="text-xs text-[#a1a1a1]">Task Title *</Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="What needs to be done?"
             required
-            className="mt-1"
+            className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
           />
         </div>
 
         <div>
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description" className="text-xs text-[#a1a1a1]">Description</Label>
           <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add details..."
-            className="mt-1"
+            className="mt-1 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
             rows={2}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="startDate">Start Date</Label>
+            <Label htmlFor="startDate" className="text-xs text-[#a1a1a1]">Start Date</Label>
             <Input
               id="startDate"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1"
+              className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
             />
           </div>
 
           <div>
-            <Label htmlFor="dueDate">Due Date</Label>
+            <Label htmlFor="dueDate" className="text-xs text-[#a1a1a1]">Due Date</Label>
             <Input
               id="dueDate"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="mt-1"
+              className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Priority</Label>
+            <Label className="text-xs text-[#a1a1a1]">Priority</Label>
             <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
-              <SelectTrigger className="mt-1">
+              <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                 <SelectItem value="critical">🔴 Critical</SelectItem>
                 <SelectItem value="high">🟠 High</SelectItem>
                 <SelectItem value="medium">🔵 Medium</SelectItem>
@@ -144,12 +144,12 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
           </div>
 
           <div>
-            <Label>Deadline Type</Label>
+            <Label className="text-xs text-[#a1a1a1]">Deadline Type</Label>
             <Select value={deadlineType} onValueChange={(v) => setDeadlineType(v as DeadlineType)}>
-              <SelectTrigger className="mt-1">
+              <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                 <SelectItem value="hard">Hard</SelectItem>
                 <SelectItem value="soft">Soft</SelectItem>
               </SelectContent>
@@ -158,12 +158,12 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
         </div>
 
         <div>
-          <Label>List</Label>
+          <Label className="text-xs text-[#a1a1a1]">List</Label>
           <Select value={list || "none"} onValueChange={(v) => setList(v === "none" ? undefined : v as List)}>
-            <SelectTrigger className="mt-1">
+            <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
               <SelectValue placeholder="Select list (optional)" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#141414] border-[#1f1f1f]">
               <SelectItem value="none">No list</SelectItem>
               <SelectItem value="personal">👤 Personal</SelectItem>
               <SelectItem value="weddings">💒 Weddings</SelectItem>
@@ -173,12 +173,12 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
         </div>
 
         <div className="flex gap-2">
-          <Button type="submit" className="flex-1">
+          <Button type="submit" className="flex-1 h-8 text-sm bg-[#5e5ce6] hover:bg-[#5e5ce6]/90">
             {initialData ? "Update Task" : "Add Task"}
           </Button>
           
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} className="h-8 text-sm border-[#1f1f1f] text-[#fafafa] hover:bg-[#1a1a1a]">
               Cancel
             </Button>
           )}

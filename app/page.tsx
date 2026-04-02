@@ -5,9 +5,9 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { TaskForm } from "@/components/TaskForm";
-import { TaskFilters } from "@/components/TaskFilters";
 import { TaskList } from "@/components/TaskList";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { Task, Priority, DeadlineType, List, Status } from "@/types/task";
 
@@ -21,11 +21,9 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
-  // Filters
+  // Filters - simplified
   const [search, setSearch] = useState("");
   const [listFilter, setListFilter] = useState<List | "all">("all");
-  const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
-  const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
 
   const handleCreate = async (data: {
     title: string;
@@ -77,36 +75,52 @@ export default function Home() {
   // Count active tasks
   const activeTasks = tasks?.filter((t: Task) => t.status !== "done").length || 0;
 
+  const listOptions: { value: List | "all"; emoji: string }[] = [
+    { value: "all", emoji: "📋" },
+    { value: "personal", emoji: "👤" },
+    { value: "weddings", emoji: "💒" },
+    { value: "house", emoji: "🏠" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <div className="max-w-3xl mx-auto p-4 md:p-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-            Jacob&apos;s Tasks
-          </h1>
-          <p className="text-sm md:text-base text-slate-600 mt-1">
-            {activeTasks} active tasks
-          </p>
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="max-w-3xl mx-auto p-4 md:p-6">
+        {/* Compact Header */}
+        <div className="flex items-center gap-2 mb-4">
+          {/* Search - 60% width on mobile, 40% on desktop */}
+          <div className="flex-1 max-w-[60%] md:max-w-[40%]">
+            <Input
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-[#141414] border-[#1f1f1f] text-sm h-8 text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
+            />
+          </div>
+          
+          {/* List tabs - small chips */}
+          <div className="flex gap-1">
+            {listOptions.map((option) => (
+              <Button
+                key={option.value}
+                size="sm"
+                variant={listFilter === option.value ? "default" : "ghost"}
+                onClick={() => setListFilter(option.value)}
+                className="h-7 px-2 text-xs"
+              >
+                {option.emoji}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="mb-6">
-          <TaskFilters
-            search={search}
-            onSearchChange={setSearch}
-            listFilter={listFilter}
-            onListFilterChange={setListFilter}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            priorityFilter={priorityFilter}
-            onPriorityFilterChange={setPriorityFilter}
-          />
+        {/* Active count */}
+        <div className="text-xs text-[#a1a1a1] mb-4">
+          {activeTasks} active tasks
         </div>
 
         {/* Add Task Form */}
         {showForm && (
-          <div className="mb-6">
+          <div className="mb-4">
             <TaskForm
               onSubmit={handleCreate}
               onCancel={() => setShowForm(false)}
@@ -116,8 +130,11 @@ export default function Home() {
 
         {/* Add Button */}
         {!showForm && !editingTaskId && (
-          <div className="mb-6">
-            <Button onClick={() => setShowForm(true)} className="w-full md:w-auto">
+          <div className="mb-4">
+            <Button 
+              onClick={() => setShowForm(true)} 
+              className="w-full md:w-auto bg-[#5e5ce6] hover:bg-[#5e5ce6]/90 text-white"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Task
             </Button>
@@ -126,7 +143,7 @@ export default function Home() {
 
         {/* Task List */}
         {tasks === undefined ? (
-          <div className="text-center py-12 text-slate-500">
+          <div className="text-center py-12 text-[#a1a1a1]">
             Loading tasks...
           </div>
         ) : (
@@ -137,22 +154,22 @@ export default function Home() {
             onDelete={handleDelete}
             search={search}
             listFilter={listFilter}
-            statusFilter={statusFilter}
-            priorityFilter={priorityFilter}
+            statusFilter="all"
+            priorityFilter="all"
           />
         )}
 
         {/* Legend */}
-        <div className="mt-8 pt-4 border-t border-slate-200">
-          <p className="text-xs text-slate-500 mb-2">Priority Legend:</p>
-          <div className="flex flex-wrap gap-3 text-xs text-slate-600">
+        <div className="mt-8 pt-4 border-t border-[#1f1f1f]">
+          <p className="text-xs text-[#a1a1a1] mb-2">Priority Legend:</p>
+          <div className="flex flex-wrap gap-3 text-xs text-[#a1a1a1]">
             <span>🔴 Critical + Hard Deadline</span>
             <span>🟠 High Priority</span>
             <span>🔵 Medium</span>
             <span>⚪ Low</span>
           </div>
-          <div className="mt-2 text-xs text-slate-500">
-            <span className="font-semibold">Bold dates</span> = Hard deadline
+          <div className="mt-2 text-xs text-[#a1a1a1]">
+            <span className="font-semibold text-[#fafafa]">Bold dates</span> = Hard deadline
           </div>
         </div>
       </div>

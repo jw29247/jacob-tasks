@@ -1,5 +1,45 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+
+// Internal mutation for HTTP API
+export const createInternal = internalMutation({
+  args: {
+    title: v.string(),
+    description: v.optional(v.string()),
+    dueDate: v.optional(v.number()),
+    startDate: v.optional(v.number()),
+    priority: v.union(
+      v.literal("critical"),
+      v.literal("high"),
+      v.literal("medium"),
+      v.literal("low")
+    ),
+    deadlineType: v.union(v.literal("hard"), v.literal("soft")),
+    list: v.optional(v.union(
+      v.literal("personal"),
+      v.literal("weddings"),
+      v.literal("house")
+    )),
+    status: v.optional(v.union(v.literal("todo"), v.literal("in-progress"), v.literal("done"))),
+    order: v.optional(v.number()),
+    createdBy: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("tasks", {
+      title: args.title,
+      description: args.description,
+      dueDate: args.dueDate,
+      startDate: args.startDate,
+      priority: args.priority,
+      deadlineType: args.deadlineType,
+      list: args.list,
+      order: args.order ?? Date.now(),
+      status: args.status ?? "todo",
+      createdAt: Date.now(),
+      createdBy: args.createdBy,
+    });
+  },
+});
 
 // Create a new task
 export const create = mutation({

@@ -2,18 +2,14 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { List, Status, Priority } from "@/types/task";
-import { Search, X } from "lucide-react";
+import { List } from "@/types/task";
+import { X } from "lucide-react";
 
 interface TaskFiltersProps {
   search: string;
   onSearchChange: (value: string) => void;
   listFilter: List | "all";
   onListFilterChange: (value: List | "all") => void;
-  statusFilter: Status | "all";
-  onStatusFilterChange: (value: Status | "all") => void;
-  priorityFilter: Priority | "all";
-  onPriorityFilterChange: (value: Priority | "all") => void;
 }
 
 export function TaskFilters({
@@ -21,10 +17,6 @@ export function TaskFilters({
   onSearchChange,
   listFilter,
   onListFilterChange,
-  statusFilter,
-  onStatusFilterChange,
-  priorityFilter,
-  onPriorityFilterChange,
 }: TaskFiltersProps) {
   const listOptions: { value: List | "all"; label: string; emoji: string }[] = [
     { value: "all", label: "All", emoji: "📋" },
@@ -33,115 +25,41 @@ export function TaskFilters({
     { value: "house", label: "House", emoji: "🏠" },
   ];
 
-  const statusOptions: { value: Status | "all"; label: string }[] = [
-    { value: "all", label: "All" },
-    { value: "todo", label: "Todo" },
-    { value: "in-progress", label: "In Progress" },
-    { value: "done", label: "Done" },
-  ];
-
-  const priorityOptions: { value: Priority | "all"; label: string; emoji: string }[] = [
-    { value: "all", label: "All", emoji: "" },
-    { value: "critical", label: "Critical", emoji: "🔴" },
-    { value: "high", label: "High", emoji: "🟠" },
-    { value: "medium", label: "Medium", emoji: "🔵" },
-    { value: "low", label: "Low", emoji: "⚪" },
-  ];
-
-  const clearFilters = () => {
-    onSearchChange("");
-    onListFilterChange("all");
-    onStatusFilterChange("all");
-    onPriorityFilterChange("all");
-  };
-
-  const hasActiveFilters =
-    search !== "" ||
-    listFilter !== "all" ||
-    statusFilter !== "all" ||
-    priorityFilter !== "all";
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Search tasks..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 pr-10"
+          className="bg-[#141414] border-[#1f1f1f] text-sm h-8 pr-8 text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
         />
         {search && (
           <button
             onClick={() => onSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-[#a1a1a1] hover:text-[#fafafa]"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" />
           </button>
         )}
       </div>
 
-      {/* List Tabs */}
-      <div className="flex flex-wrap gap-2">
+      {/* List Tabs - small chips */}
+      <div className="flex flex-wrap gap-1">
         {listOptions.map((option) => (
           <Button
             key={option.value}
-            variant={listFilter === option.value ? "default" : "outline"}
+            variant={listFilter === option.value ? "default" : "ghost"}
             size="sm"
             onClick={() => onListFilterChange(option.value)}
-            className="text-xs"
+            className="h-7 px-2 text-xs bg-[#5e5ce6] hover:bg-[#5e5ce6]/90 data-[variant=ghost]:bg-transparent data-[variant=ghost]:hover:bg-[#1a1a1a]"
           >
             <span className="mr-1">{option.emoji}</span>
-            {option.label}
+            <span className="hidden sm:inline">{option.label}</span>
           </Button>
         ))}
       </div>
-
-      {/* Status & Priority Filters */}
-      <div className="flex flex-wrap gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-600">Status:</span>
-          <div className="flex gap-1">
-            {statusOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={statusFilter === option.value ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => onStatusFilterChange(option.value)}
-                className="text-xs h-7"
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-600">Priority:</span>
-          <div className="flex gap-1">
-            {priorityOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={priorityFilter === option.value ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => onPriorityFilterChange(option.value)}
-                className="text-xs h-7"
-              >
-                {option.emoji && <span className="mr-1">{option.emoji}</span>}
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Clear Filters */}
-      {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
-          Clear all filters
-        </Button>
-      )}
     </div>
   );
 }

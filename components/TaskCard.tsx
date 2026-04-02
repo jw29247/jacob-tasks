@@ -92,23 +92,23 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
   const isStarted = task.startDate && task.startDate <= now;
 
   const getUrgencyColor = () => {
-    if (task.status === "done") return "border-l-gray-300 bg-gray-50";
-    if (isOverdue) return "border-l-red-500 bg-red-50 animate-pulse";
+    if (task.status === "done") return "border-l-gray-600";
+    if (isOverdue) return "border-l-red-500";
     if (task.priority === "critical" && task.deadlineType === "hard") {
-      return "border-l-red-500 bg-red-50";
+      return "border-l-red-500";
     }
     if (task.priority === "critical" || (task.priority === "high" && task.deadlineType === "hard")) {
-      return "border-l-orange-500 bg-orange-50";
+      return "border-l-orange-500";
     }
-    return "border-l-slate-300 bg-white";
+    return "border-l-[#1f1f1f]";
   };
 
   const getPriorityBadge = () => {
     const colors = {
-      critical: "bg-red-500 text-white",
-      high: "bg-orange-500 text-white",
-      medium: "bg-blue-500 text-white",
-      low: "bg-gray-500 text-white",
+      critical: "bg-red-500/20 text-red-400 border-red-500/30",
+      high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+      medium: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      low: "bg-gray-500/20 text-gray-400 border-gray-500/30",
     };
     return colors[task.priority];
   };
@@ -142,62 +142,62 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
   if (showEdit || isEditing) {
     return (
       <Card className={cn(
-        "p-4 border-l-4",
+        "p-3 border-l-4 bg-[#141414] border-[#1f1f1f]",
         getUrgencyColor()
       )}>
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div>
-            <Label htmlFor="edit-title" className="text-xs">Title</Label>
+            <Label htmlFor="edit-title" className="text-xs text-[#a1a1a1]">Title</Label>
             <Input
               id="edit-title"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
-              className="mt-1 text-sm"
+              className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
             />
           </div>
 
           <div>
-            <Label htmlFor="edit-desc" className="text-xs">Description</Label>
+            <Label htmlFor="edit-desc" className="text-xs text-[#a1a1a1]">Description</Label>
             <Textarea
               id="edit-desc"
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
-              className="mt-1 text-sm"
+              className="mt-1 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
               rows={2}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="edit-start" className="text-xs">Start Date</Label>
+              <Label htmlFor="edit-start" className="text-xs text-[#a1a1a1]">Start Date</Label>
               <Input
                 id="edit-start"
                 type="date"
                 value={editStartDate}
                 onChange={(e) => setEditStartDate(e.target.value)}
-                className="mt-1 text-sm"
+                className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
               />
             </div>
             <div>
-              <Label htmlFor="edit-due" className="text-xs">Due Date</Label>
+              <Label htmlFor="edit-due" className="text-xs text-[#a1a1a1]">Due Date</Label>
               <Input
                 id="edit-due"
                 type="date"
                 value={editDueDate}
                 onChange={(e) => setEditDueDate(e.target.value)}
-                className="mt-1 text-sm"
+                className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Priority</Label>
+              <Label className="text-xs text-[#a1a1a1]">Priority</Label>
               <Select value={editPriority} onValueChange={(v) => setEditPriority(v as Priority)}>
-                <SelectTrigger className="mt-1 text-sm">
+                <SelectTrigger className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                   <SelectItem value="critical">🔴 Critical</SelectItem>
                   <SelectItem value="high">🟠 High</SelectItem>
                   <SelectItem value="medium">🔵 Medium</SelectItem>
@@ -206,12 +206,12 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Deadline Type</Label>
+              <Label className="text-xs text-[#a1a1a1]">Deadline Type</Label>
               <Select value={editDeadlineType} onValueChange={(v) => setEditDeadlineType(v as DeadlineType)}>
-                <SelectTrigger className="mt-1 text-sm">
+                <SelectTrigger className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                   <SelectItem value="hard">Hard</SelectItem>
                   <SelectItem value="soft">Soft</SelectItem>
                 </SelectContent>
@@ -219,14 +219,14 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">List</Label>
+              <Label className="text-xs text-[#a1a1a1]">List</Label>
               <Select value={editList || "none"} onValueChange={(v) => setEditList(v === "none" ? undefined : v as List)}>
-                <SelectTrigger className="mt-1 text-sm">
+                <SelectTrigger className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
                   <SelectValue placeholder="Select list" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                   <SelectItem value="none">No list</SelectItem>
                   <SelectItem value="personal">👤 Personal</SelectItem>
                   <SelectItem value="weddings">💒 Weddings</SelectItem>
@@ -235,12 +235,12 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Status</Label>
+              <Label className="text-xs text-[#a1a1a1]">Status</Label>
               <Select value={editStatus} onValueChange={(v) => setEditStatus(v as Status)}>
-                <SelectTrigger className="mt-1 text-sm">
+                <SelectTrigger className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                   <SelectItem value="todo">Todo</SelectItem>
                   <SelectItem value="in-progress">In Progress</SelectItem>
                   <SelectItem value="done">Done</SelectItem>
@@ -250,11 +250,11 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
           </div>
 
           <div className="flex gap-2">
-            <Button size="sm" onClick={handleSave} className="flex-1">
+            <Button size="sm" onClick={handleSave} className="flex-1 h-8 bg-[#5e5ce6] hover:bg-[#5e5ce6]/90">
               <Save className="h-3 w-3 mr-1" />
               Save
             </Button>
-            <Button size="sm" variant="outline" onClick={handleCancel} className="flex-1">
+            <Button size="sm" variant="outline" onClick={handleCancel} className="flex-1 h-8 border-[#1f1f1f] text-[#fafafa] hover:bg-[#1a1a1a]">
               <X className="h-3 w-3 mr-1" />
               Cancel
             </Button>
@@ -267,33 +267,33 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
   return (
     <Card 
       className={cn(
-        "p-4 border-l-4 transition-all hover:shadow-md cursor-pointer",
+        "p-3 border-l-4 transition-all hover:bg-[#1a1a1a] cursor-pointer bg-[#141414] border-[#1f1f1f]",
         getUrgencyColor()
       )}
       onClick={() => setShowEdit(true)}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className="mt-1 h-6 w-6 shrink-0"
+          className="mt-0 h-5 w-5 shrink-0 hover:bg-[#1a1a1a]"
           onClick={(e) => {
             e.stopPropagation();
             onToggle(task._id);
           }}
         >
           {task.status === "done" ? (
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
           ) : (
-            <Circle className="h-5 w-5 text-gray-400" />
+            <Circle className="h-4 w-4 text-[#a1a1a1]" />
           )}
         </Button>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className={cn(
-              "font-medium text-sm md:text-base",
-              task.status === "done" && "line-through text-gray-500"
+              "font-medium text-sm",
+              task.status === "done" ? "line-through text-[#a1a1a1]" : "text-[#fafafa]"
             )}>
               {task.title}
             </h3>
@@ -303,18 +303,18 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8 shrink-0"
+                  className="h-6 w-6 shrink-0 hover:bg-[#1a1a1a]"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="h-3 w-3 text-[#a1a1a1]" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-[#141414] border-[#1f1f1f]">
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
                   setShowEdit(true);
-                }}>
-                  <Edit2 className="h-4 w-4 mr-2" />
+                }} className="text-[#fafafa] hover:bg-[#1a1a1a]">
+                  <Edit2 className="h-3 w-3 mr-2" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem 
@@ -322,9 +322,9 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
                     e.stopPropagation();
                     onDelete(task._id);
                   }}
-                  className="text-red-600"
+                  className="text-red-400 hover:bg-[#1a1a1a]"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="h-3 w-3 mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -333,28 +333,28 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
           
           {task.description && (
             <p className={cn(
-              "text-xs md:text-sm text-gray-600 mt-1",
+              "text-xs text-[#a1a1a1] mt-1",
               task.status === "done" && "line-through"
             )}>
               {task.description}
             </p>
           )}
           
-          <div className="flex flex-wrap items-center gap-2 mt-2">
-            <Badge className={cn("text-xs", getPriorityBadge())}>
+          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+            <Badge className={cn("text-xs border", getPriorityBadge())}>
               {task.priority}
             </Badge>
             
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs border-[#1f1f1f] text-[#a1a1a1]">
               {task.deadlineType}
             </Badge>
             
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs bg-[#1a1a1a] text-[#a1a1a1]">
               {task.status === "in-progress" ? "In Progress" : task.status}
             </Badge>
 
             {task.list && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs border-[#1f1f1f] text-[#a1a1a1]">
                 {task.list === "personal" && "👤"}
                 {task.list === "weddings" && "💒"}
                 {task.list === "house" && "🏠"}
@@ -365,7 +365,7 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
             {task.startDate && (
               <div className={cn(
                 "flex items-center gap-1 text-xs",
-                isStarted ? "text-green-600 font-medium" : "text-gray-500"
+                isStarted ? "text-green-400" : "text-[#a1a1a1]"
               )}>
                 <Play className="h-3 w-3" />
                 <span>{formatDate(task.startDate)}</span>
@@ -375,11 +375,11 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
             {task.dueDate && (
               <div className={cn(
                 "flex items-center gap-1 text-xs",
-                isOverdue ? "text-red-600 font-semibold" : "text-gray-500"
+                isOverdue ? "text-red-400 font-semibold" : "text-[#a1a1a1]"
               )}>
                 <Clock className="h-3 w-3" />
                 <span>{formatDate(task.dueDate)}</span>
-                {isOverdue && <span className="text-red-600"> (Overdue)</span>}
+                {isOverdue && <span className="text-red-400"> (Overdue)</span>}
               </div>
             )}
           </div>

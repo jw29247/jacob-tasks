@@ -93,20 +93,21 @@ function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDe
       <div
         {...attributes}
         {...listeners}
-        className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-100 mt-3"
+        className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-[#1a1a1a] mt-2"
         onClick={(e) => e.stopPropagation()}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#a1a1a1]">
           <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
           <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>
         </svg>
       </div>
 
       {/* Checkbox */}
-      <div className="pt-3">
+      <div className="pt-2">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelect(task._id)}
+          className="border-[#1f1f1f] data-[state=checked]:bg-[#5e5ce6] data-[state=checked]:border-[#5e5ce6]"
         />
       </div>
 
@@ -267,30 +268,30 @@ export function TaskList({
   const displayTasks = localTasks.length > 0 ? localTasks : sortedTasks;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-blue-900">
+        <div className="bg-[#141414] border border-[#1f1f1f] rounded-lg p-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-[#5e5ce6]">
             {selectedIds.size} selected
           </span>
 
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("todo")}>
-              Mark Todo
+          <div className="flex flex-wrap gap-1">
+            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("todo")} className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]">
+              Todo
             </Button>
-            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("in-progress")}>
-              Mark In Progress
+            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("in-progress")} className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]">
+              In Progress
             </Button>
-            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("done")}>
-              Mark Done
+            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("done")} className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]">
+              Done
             </Button>
 
             <Select onValueChange={(v) => handleBulkPriority(v as Priority)}>
-              <SelectTrigger className="w-32 h-8">
+              <SelectTrigger className="w-24 h-7 text-xs bg-[#0a0a0a] border-[#1f1f1f] text-[#a1a1a1]">
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                 <SelectItem value="critical">🔴 Critical</SelectItem>
                 <SelectItem value="high">🟠 High</SelectItem>
                 <SelectItem value="medium">🔵 Medium</SelectItem>
@@ -299,10 +300,10 @@ export function TaskList({
             </Select>
 
             <Select onValueChange={(v) => handleBulkList(v === "none" ? undefined : v as List)}>
-              <SelectTrigger className="w-32 h-8">
+              <SelectTrigger className="w-24 h-7 text-xs bg-[#0a0a0a] border-[#1f1f1f] text-[#a1a1a1]">
                 <SelectValue placeholder="List" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                 <SelectItem value="none">No list</SelectItem>
                 <SelectItem value="personal">👤 Personal</SelectItem>
                 <SelectItem value="weddings">💒 Weddings</SelectItem>
@@ -310,25 +311,26 @@ export function TaskList({
               </SelectContent>
             </Select>
 
-            <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+            <Button size="sm" variant="destructive" onClick={handleBulkDelete} className="h-7 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30">
               Delete
             </Button>
           </div>
 
-          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
-            Clear selection
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-7 text-xs text-[#a1a1a1] hover:bg-[#1a1a1a]">
+            Clear
           </Button>
         </div>
       )}
 
       {/* Select All */}
       {sortedTasks.length > 0 && (
-        <div className="flex items-center gap-2 px-2">
+        <div className="flex items-center gap-2 px-1">
           <Checkbox
             checked={selectedIds.size === sortedTasks.length}
             onCheckedChange={toggleSelectAll}
+            className="border-[#1f1f1f] data-[state=checked]:bg-[#5e5ce6] data-[state=checked]:border-[#5e5ce6]"
           />
-          <span className="text-xs text-gray-600">Select all ({sortedTasks.length})</span>
+          <span className="text-xs text-[#a1a1a1]">Select all ({sortedTasks.length})</span>
         </div>
       )}
 
@@ -342,11 +344,11 @@ export function TaskList({
           items={displayTasks.map((t) => t._id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-3">
+          <div className="space-y-2">
             {displayTasks.length === 0 ? (
-              <div className="text-center py-12 text-slate-500">
+              <div className="text-center py-12 text-[#a1a1a1]">
                 <div className="text-4xl mb-2">🔍</div>
-                <p>No tasks match your filters</p>
+                <p className="text-sm">No tasks match your filters</p>
               </div>
             ) : (
               displayTasks.map((task) => (
