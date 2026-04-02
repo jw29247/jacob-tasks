@@ -7,6 +7,7 @@ export const create = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     dueDate: v.optional(v.number()),
+    startDate: v.optional(v.number()),
     priority: v.union(
       v.literal("critical"),
       v.literal("high"),
@@ -14,6 +15,12 @@ export const create = mutation({
       v.literal("low")
     ),
     deadlineType: v.union(v.literal("hard"), v.literal("soft")),
+    list: v.optional(v.union(
+      v.literal("personal"),
+      v.literal("weddings"),
+      v.literal("house")
+    )),
+    order: v.optional(v.number()),
     createdBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -21,8 +28,11 @@ export const create = mutation({
       title: args.title,
       description: args.description,
       dueDate: args.dueDate,
+      startDate: args.startDate,
       priority: args.priority,
       deadlineType: args.deadlineType,
+      list: args.list,
+      order: args.order ?? Date.now(),
       status: "todo",
       createdAt: Date.now(),
       createdBy: args.createdBy,
@@ -37,6 +47,7 @@ export const update = mutation({
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     dueDate: v.optional(v.number()),
+    startDate: v.optional(v.number()),
     priority: v.optional(
       v.union(
         v.literal("critical"),
@@ -47,6 +58,12 @@ export const update = mutation({
     ),
     deadlineType: v.optional(v.union(v.literal("hard"), v.literal("soft"))),
     status: v.optional(v.union(v.literal("todo"), v.literal("in-progress"), v.literal("done"))),
+    list: v.optional(v.union(
+      v.literal("personal"),
+      v.literal("weddings"),
+      v.literal("house")
+    )),
+    order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -148,5 +165,76 @@ export const get = query({
   },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
+  },
+});
+
+// Bulk update status
+export const bulkUpdateStatus = mutation({
+  args: {
+    ids: v.array(v.id("tasks")),
+    status: v.union(v.literal("todo"), v.literal("in-progress"), v.literal("done")),
+  },
+  handler: async (ctx, args) => {
+    for (const id of args.ids) {
+      await ctx.db.patch(id, { status: args.status });
+    }
+  },
+});
+
+// Bulk update priority
+export const bulkUpdatePriority = mutation({
+  args: {
+    ids: v.array(v.id("tasks")),
+    priority: v.union(
+      v.literal("critical"),
+      v.literal("high"),
+      v.literal("medium"),
+      v.literal("low")
+    ),
+  },
+  handler: async (ctx, args) => {
+    for (const id of args.ids) {
+      await ctx.db.patch(id, { priority: args.priority });
+    }
+  },
+});
+
+// Bulk update list
+export const bulkUpdateList = mutation({
+  args: {
+    ids: v.array(v.id("tasks")),
+    list: v.optional(v.union(
+      v.literal("personal"),
+      v.literal("weddings"),
+      v.literal("house")
+    )),
+  },
+  handler: async (ctx, args) => {
+    for (const id of args.ids) {
+      await ctx.db.patch(id, { list: args.list });
+    }
+  },
+});
+
+// Bulk delete
+export const bulkDelete = mutation({
+  args: {
+    ids: v.array(v.id("tasks")),
+  },
+  handler: async (ctx, args) => {
+    for (const id of args.ids) {
+      await ctx.db.delete(id);
+    }
+  },
+});
+
+// Update task order
+export const updateOrder = mutation({
+  args: {
+    id: v.id("tasks"),
+    order: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { order: args.order });
   },
 });

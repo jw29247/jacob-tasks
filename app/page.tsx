@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { TaskCard } from "@/components/TaskCard";
 import { TaskForm } from "@/components/TaskForm";
+import { TaskFilters } from "@/components/TaskFilters";
+import { TaskList } from "@/components/TaskList";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Task } from "@/types/task";
+import { Task, Priority, DeadlineType, List, Status } from "@/types/task";
 
 export default function Home() {
   const tasks = useQuery(api.tasks.list);
@@ -18,57 +19,93 @@ export default function Home() {
   const toggleComplete = useMutation(api.tasks.toggleComplete);
 
   const [showForm, setShowForm] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
+  // Filters
+  const [search, setSearch] = useState("");
+  const [listFilter, setListFilter] = useState<List | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
 
   const handleCreate = async (data: {
     title: string;
     description?: string;
     dueDate?: number;
-    priority: "critical" | "high" | "medium" | "low";
-    deadlineType: "hard" | "soft";
+    startDate?: number;
+    priority: Priority;
+    deadlineType: DeadlineType;
+    list?: List;
   }) => {
     await createTask({ ...data, createdBy: "web" });
     setShowForm(false);
   };
 
-  const handleUpdate = async (data: {
+  const handleEdit = async (task: Task, data: {
     title: string;
     description?: string;
     dueDate?: number;
-    priority: "critical" | "high" | "medium" | "low";
-    deadlineType: "hard" | "soft";
+    startDate?: number;
+    priority: Priority;
+    deadlineType: DeadlineType;
+    list?: List;
+    status: Status;
   }) => {
-    if (!editingTask) return;
     await updateTask({
-      id: editingTask._id as Id<"tasks">,
-      ...data,
+      id: task._id as Id<"tasks">,
+      title: data.title,
+      description: data.description,
+      dueDate: data.dueDate,
+      startDate: data.startDate,
+      priority: data.priority,
+      deadlineType: data.deadlineType,
+      list: data.list,
+      status: data.status,
     });
-    setEditingTask(null);
+    setEditingTaskId(null);
   };
 
   const handleDelete = async (id: string) => {
-    await deleteTask({ id: id as Id<"tasks"> });
+    if (confirm("Delete this task?")) {
+      await deleteTask({ id: id as Id<"tasks"> });
+    }
   };
 
   const handleToggle = async (id: string) => {
     await toggleComplete({ id: id as Id<"tasks"> });
   };
 
+  // Count active tasks
+  const activeTasks = tasks?.filter((t: Task) => t.status !== "done").length || 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <div className="max-w-2xl mx-auto p-4 md:p-8">
+      <div className="max-w-3xl mx-auto p-4 md:p-8">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
             Jacob&apos;s Tasks
           </h1>
           <p className="text-sm md:text-base text-slate-600 mt-1">
-            {tasks?.filter((t: Task) => t.status !== "done").length || 0} tasks remaining
+            {activeTasks} active tasks
           </p>
         </div>
 
+        {/* Filters */}
+        <div className="mb-6">
+          <TaskFilters
+            search={search}
+            onSearchChange={setSearch}
+            listFilter={listFilter}
+            onListFilterChange={setListFilter}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            priorityFilter={priorityFilter}
+            onPriorityFilterChange={setPriorityFilter}
+          />
+        </div>
+
         {/* Add Task Form */}
-        {showForm && !editingTask && (
+        {showForm && (
           <div className="mb-6">
             <TaskForm
               onSubmit={handleCreate}
@@ -77,24 +114,10 @@ export default function Home() {
           </div>
         )}
 
-        {/* Edit Task Form */}
-        {editingTask && (
-          <div className="mb-6">
-            <TaskForm
-              initialData={editingTask}
-              onSubmit={handleUpdate}
-              onCancel={() => setEditingTask(null)}
-            />
-          </div>
-        )}
-
         {/* Add Button */}
-        {!showForm && !editingTask && (
+        {!showForm && !editingTaskId && (
           <div className="mb-6">
-            <Button
-              onClick={() => setShowForm(true)}
-              className="w-full md:w-auto"
-            >
+            <Button onClick={() => setShowForm(true)} className="w-full md:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Task
             </Button>
@@ -102,28 +125,22 @@ export default function Home() {
         )}
 
         {/* Task List */}
-        <div className="space-y-3">
-          {tasks === undefined ? (
-            <div className="text-center py-12 text-slate-500">
-              Loading tasks...
-            </div>
-          ) : tasks.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">
-              <div className="text-4xl mb-2">✨</div>
-              <p>No tasks yet. Add one above!</p>
-            </div>
-          ) : (
-            tasks.map((task: Task) => (
-              <TaskCard
-                key={task._id}
-                task={task}
-                onToggle={handleToggle}
-                onEdit={setEditingTask}
-                onDelete={handleDelete}
-              />
-            ))
-          )}
-        </div>
+        {tasks === undefined ? (
+          <div className="text-center py-12 text-slate-500">
+            Loading tasks...
+          </div>
+        ) : (
+          <TaskList
+            tasks={tasks}
+            onToggle={handleToggle}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            search={search}
+            listFilter={listFilter}
+            statusFilter={statusFilter}
+            priorityFilter={priorityFilter}
+          />
+        )}
 
         {/* Legend */}
         <div className="mt-8 pt-4 border-t border-slate-200">
@@ -133,6 +150,9 @@ export default function Home() {
             <span>🟠 High Priority</span>
             <span>🔵 Medium</span>
             <span>⚪ Low</span>
+          </div>
+          <div className="mt-2 text-xs text-slate-500">
+            <span className="font-semibold">Bold dates</span> = Hard deadline
           </div>
         </div>
       </div>
