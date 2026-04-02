@@ -139,62 +139,38 @@ export const toggleComplete = mutation({
 export const list = query({
   handler: async (ctx) => {
     const tasks = await ctx.db.query("tasks").collect();
-    
-    // Sort by urgency
     const now = Date.now();
     
     type TaskDoc = typeof tasks[0];
     
-    return tasks.sort((a: TaskDoc, b: TaskDoc) => {
-      // Completed tasks at the bottom
-      if (a.status === "done" && b.status !== "done") return 1;
-      if (b.status === "done" && a.status !== "done") return -1;
+    const getUrgencyScore = (task: TaskDoc): number => {
+      // Completed tasks at bottom
+      if (task.status === "done") return -50000;
       
-      // Calculate urgency scores
-      const getUrgencyScore = (task: typeof tasks[0]) => {
-        let score = 0;
-        
-        // Overdue tasks get highest priority
-        if (task.dueDate && task.dueDate < now && task.status !== "done") {
-          return 10000 + (task.dueDate - now) / 1000000; // More overdue = higher
-        }
-        
-        // Critical + Hard deadline = highest urgency (score 5000)
-        if (task.priority === "critical" && task.deadlineType === "hard") {
-          score = 5000;
-        }
-        // Critical + Soft deadline = high urgency (score 4000)
-        else if (task.priority === "critical" && task.deadlineType === "soft") {
-          score = 4000;
-        }
-        // High + Hard deadline = high urgency (score 4000)
-        else if (task.priority === "high" && task.deadlineType === "hard") {
-          score = 4000;
-        }
-        // High + Soft deadline
-        else if (task.priority === "high" && task.deadlineType === "soft") {
-          score = 3000;
-        }
-        // Medium
-        else if (task.priority === "medium") {
-          score = 2000;
-        }
-        // Low
-        else {
-          score = 1000;
-        }
-        
-        // Add due date factor (closer due date = higher priority)
-        if (task.dueDate && task.dueDate > now) {
-          const daysUntilDue = (task.dueDate - now) / (1000 * 60 * 60 * 24);
-          score += Math.max(0, 100 - daysUntilDue * 10);
-        }
-        
-        return score;
-      };
+      // Not yet started
+      if (task.startDate && task.startDate > now) return -10000;
       
-      return getUrgencyScore(b) - getUrgencyScore(a);
-    });
+      // Overdue
+      if (task.dueDate && task.dueDate < now) {
+        const daysOverdue = (now - task.dueDate) / (1000 * 60 * 60 * 24);
+        return 100000 - daysOverdue * 100;
+      }
+      
+      // Normal scoring
+      const priorityBase = { critical: 4000, high: 3000, medium: 2000, low: 1000 };
+      const deadlineMult = { hard: 1.5, soft: 1.0 };
+      
+      let score = priorityBase[task.priority] * deadlineMult[task.deadlineType];
+      
+      if (task.dueDate) {
+        const daysUntilDue = (task.dueDate - now) / (1000 * 60 * 60 * 24);
+        score += 5000 * Math.exp(-Math.max(0, daysUntilDue) / 5);
+      }
+      
+      return score;
+    };
+    
+    return tasks.sort((a, b) => getUrgencyScore(b) - getUrgencyScore(a));
   },
 });
 
