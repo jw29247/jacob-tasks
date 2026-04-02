@@ -93,7 +93,7 @@ export default function Home() {
               placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-[#141414] border-[#1f1f1f] text-sm h-8 text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
+              className="bg-[#141414] border-[#1f1f1f] text-sm h-8 text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#f97316]"
             />
           </div>
           
@@ -133,7 +133,7 @@ export default function Home() {
           <div className="mb-4">
             <Button 
               onClick={() => setShowForm(true)} 
-              className="w-full md:w-auto bg-[#5e5ce6] hover:bg-[#5e5ce6]/90 text-white"
+              className="w-full md:w-auto bg-[#f97316] hover:bg-[#f97316]/90 text-white"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Task
