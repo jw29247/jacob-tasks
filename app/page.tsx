@@ -1,101 +1,141 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { TaskCard } from "@/components/TaskCard";
+import { TaskForm } from "@/components/TaskForm";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { Task } from "@/types/task";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const tasks = useQuery(api.tasks.list);
+  const createTask = useMutation(api.tasks.create);
+  const updateTask = useMutation(api.tasks.update);
+  const deleteTask = useMutation(api.tasks.remove);
+  const toggleComplete = useMutation(api.tasks.toggleComplete);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const handleCreate = async (data: {
+    title: string;
+    description?: string;
+    dueDate?: number;
+    priority: "critical" | "high" | "medium" | "low";
+    deadlineType: "hard" | "soft";
+  }) => {
+    await createTask({ ...data, createdBy: "web" });
+    setShowForm(false);
+  };
+
+  const handleUpdate = async (data: {
+    title: string;
+    description?: string;
+    dueDate?: number;
+    priority: "critical" | "high" | "medium" | "low";
+    deadlineType: "hard" | "soft";
+  }) => {
+    if (!editingTask) return;
+    await updateTask({
+      id: editingTask._id as Id<"tasks">,
+      ...data,
+    });
+    setEditingTask(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteTask({ id: id as Id<"tasks"> });
+  };
+
+  const handleToggle = async (id: string) => {
+    await toggleComplete({ id: id as Id<"tasks"> });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      <div className="max-w-2xl mx-auto p-4 md:p-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Jacob&apos;s Tasks
+          </h1>
+          <p className="text-sm md:text-base text-slate-600 mt-1">
+            {tasks?.filter((t: Task) => t.status !== "done").length || 0} tasks remaining
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Add Task Form */}
+        {showForm && !editingTask && (
+          <div className="mb-6">
+            <TaskForm
+              onSubmit={handleCreate}
+              onCancel={() => setShowForm(false)}
+            />
+          </div>
+        )}
+
+        {/* Edit Task Form */}
+        {editingTask && (
+          <div className="mb-6">
+            <TaskForm
+              initialData={editingTask}
+              onSubmit={handleUpdate}
+              onCancel={() => setEditingTask(null)}
+            />
+          </div>
+        )}
+
+        {/* Add Button */}
+        {!showForm && !editingTask && (
+          <div className="mb-6">
+            <Button
+              onClick={() => setShowForm(true)}
+              className="w-full md:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+          </div>
+        )}
+
+        {/* Task List */}
+        <div className="space-y-3">
+          {tasks === undefined ? (
+            <div className="text-center py-12 text-slate-500">
+              Loading tasks...
+            </div>
+          ) : tasks.length === 0 ? (
+            <div className="text-center py-12 text-slate-500">
+              <div className="text-4xl mb-2">✨</div>
+              <p>No tasks yet. Add one above!</p>
+            </div>
+          ) : (
+            tasks.map((task: Task) => (
+              <TaskCard
+                key={task._id}
+                task={task}
+                onToggle={handleToggle}
+                onEdit={setEditingTask}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Legend */}
+        <div className="mt-8 pt-4 border-t border-slate-200">
+          <p className="text-xs text-slate-500 mb-2">Priority Legend:</p>
+          <div className="flex flex-wrap gap-3 text-xs text-slate-600">
+            <span>🔴 Critical + Hard Deadline</span>
+            <span>🟠 High Priority</span>
+            <span>🔵 Medium</span>
+            <span>⚪ Low</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

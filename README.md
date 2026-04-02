@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jacob's Tasks
 
-## Getting Started
+A simple, mobile-friendly to-do app built with Next.js 14, Convex, and Shadcn/ui.
 
-First, run the development server:
+## Features
+
+- ✅ Full CRUD operations (create, view, edit, delete, complete)
+- 📋 Task fields: title, description, due date, priority, deadline type, status
+- 🎯 Smart sorting by urgency (critical + hard deadline = top priority)
+- 📱 Mobile-friendly responsive design
+- ⚡ Fast entry with simple add form
+
+## Priority Logic
+
+- 🔴 Critical + Hard deadline = highest urgency (red background)
+- 🟠 Critical + Soft OR High + Hard = high urgency (orange background)
+- 🔵 Medium priority = normal
+- ⚪ Low priority = normal
+- 🚨 Overdue tasks = flashing red
+
+## Setup
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Convex
+
+First, you'll need a Convex account. If you don't have one, the CLI will guide you through creating one.
+
+```bash
+npx convex dev
+```
+
+This will:
+1. Prompt you to log in to Convex (or create an account)
+2. Create a new Convex deployment
+3. Generate the necessary API files
+4. Update your `.env.local` with the correct `NEXT_PUBLIC_CONVEX_URL`
+
+### 3. Run Development Server
+
+In one terminal, keep Convex running:
+
+```bash
+npx convex dev
+```
+
+In another terminal, run Next.js:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
+- **Backend**: Convex (real-time database)
+- **UI Components**: Shadcn/ui
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Deploy to Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push to GitHub
+2. Import to Vercel
+3. Add `NEXT_PUBLIC_CONVEX_URL` environment variable from your Convex dashboard
+4. Deploy!
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Production Convex
 
-## Deploy on Vercel
+For production, create a separate Convex deployment:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npx convex deploy
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Then use that deployment's URL in your Vercel environment variables.
