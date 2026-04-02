@@ -247,44 +247,61 @@ export const getSchedule = query({
     
     // Schedule tasks
     const schedule = [];
-    let currentDate = new Date(now);
-    currentDate.setHours(0, 0, 0, 0);
+    let currentDay = new Date(now);
+    currentDay.setHours(0, 0, 0, 0);
     
-    // Skip to next available time (after current time if weekday before 8pm, or next day)
+    // Skip to next available day if past working hours
     const currentHour = new Date(now).getHours();
-    const currentDay = new Date(now).getDay();
-    if (currentHour >= 20 || (currentHour < 16 && currentDay >= 1 && currentDay <= 5)) {
-      // Move to next day
-      currentDate.setDate(currentDate.getDate() + 1);
-      currentDate.setHours(0, 0, 0, 0);
+    const currentDayOfWeek = currentDay.getDay();
+    if (currentHour >= 20 || (currentHour < 16 && currentDayOfWeek >= 1 && currentDayOfWeek <= 5)) {
+      currentDay.setDate(currentDay.getDate() + 1);
     }
+    
+    // Track remaining hours for each day
+    const dayCapacity = new Map<string, number>();
+    
+    const getCapacityKey = (date: Date) => {
+      return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    };
+    
+    const getRemainingHours = (date: Date) => {
+      const key = getCapacityKey(date);
+      if (!dayCapacity.has(key)) {
+        const day = date.getDay();
+        dayCapacity.set(key, day === 0 || day === 6 ? 9 : 4);
+      }
+      return dayCapacity.get(key)!;
+    };
     
     for (const task of activeTasks) {
       const hoursNeeded = (task.timeEstimate || 60) / 60;
       let hoursRemaining = hoursNeeded;
-      const taskStartDate = new Date(currentDate);
+      const taskStartDate = new Date(currentDay);
       let taskEndDate: Date | null = null;
-      let workingDate = new Date(currentDate);
-      let remainingHoursOnDay = getAvailableHours(workingDate);
+      let workingDay = new Date(currentDay);
       
       while (hoursRemaining > 0) {
-        if (remainingHoursOnDay > 0) {
-          const hoursToWork = Math.min(hoursRemaining, remainingHoursOnDay);
+        let available = getRemainingHours(workingDay);
+        
+        if (available > 0) {
+          const hoursToWork = Math.min(hoursRemaining, available);
           hoursRemaining -= hoursToWork;
-          remainingHoursOnDay -= hoursToWork;
+          available -= hoursToWork;
           
-          taskEndDate = new Date(workingDate);
+          // Update capacity
+          dayCapacity.set(getCapacityKey(workingDay), available);
+          
+          taskEndDate = new Date(workingDay);
         }
         
-        // Only move to next day if we've used all hours on current day
-        if (remainingHoursOnDay <= 0) {
-          workingDate.setDate(workingDate.getDate() + 1);
-          remainingHoursOnDay = getAvailableHours(workingDate);
+        // Only move to next day if current day is exhausted
+        if (getRemainingHours(workingDay) <= 0) {
+          workingDay.setDate(workingDay.getDate() + 1);
         }
       }
       
-      // Update currentDate for next task (preserves remaining time on day)
-      currentDate = new Date(workingDate);
+      // Update currentDay for next task
+      currentDay = new Date(workingDay);
       
       schedule.push({
         task,
