@@ -21,6 +21,7 @@ export default defineSchema({
       v.literal("house")
     )),
     order: v.optional(v.number()),
+    timeEstimate: v.optional(v.number()), // in minutes
     createdAt: v.number(),
     createdBy: v.optional(v.string()),
   })

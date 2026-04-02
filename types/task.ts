@@ -14,6 +14,7 @@ export interface Task {
   status: Status;
   list?: List;
   order?: number;
+  timeEstimate?: number; // in minutes
   createdAt: number;
   createdBy?: string;
 }

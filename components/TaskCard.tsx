@@ -8,16 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { 
-  CheckCircle2, 
-  Circle, 
-  MoreVertical, 
-  Edit2, 
-  Trash2, 
+import {
+  CheckCircle2,
+  Circle,
+  MoreVertical,
+  Edit2,
+  Trash2,
   Clock,
   Play,
   X,
-  Save
+  Save,
+  Timer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -46,6 +47,7 @@ interface TaskCardProps {
     deadlineType: DeadlineType;
     list?: List;
     status: Status;
+    timeEstimate?: number;
   }) => void;
   onDelete: (id: string) => void;
   isEditing?: boolean;
@@ -59,7 +61,7 @@ function formatDate(timestamp: number | undefined): string {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const nextWeek = new Date(now);
   nextWeek.setDate(nextWeek.getDate() + 7);
-  
+
   if (date.toDateString() === now.toDateString()) {
     return "Today";
   }
@@ -70,6 +72,18 @@ function formatDate(timestamp: number | undefined): string {
     return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric" });
   }
   return date.toLocaleDateString("en-GB", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function formatTimeEstimate(minutes: number | undefined): string {
+  if (!minutes) return "";
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
+  const hours = minutes / 60;
+  if (hours === Math.floor(hours)) {
+    return `${hours}h`;
+  }
+  return `${hours.toFixed(1)}h`;
 }
 
 export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCardProps) {
@@ -85,6 +99,10 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
   const [editDeadlineType, setEditDeadlineType] = useState<DeadlineType>(task.deadlineType);
   const [editList, setEditList] = useState<List | undefined>(task.list);
   const [editStatus, setEditStatus] = useState<Status>(task.status);
+  const [editTimeValue, setEditTimeValue] = useState(
+    task.timeEstimate ? task.timeEstimate.toString() : ""
+  );
+  const [editTimeUnit, setEditTimeUnit] = useState<"minutes" | "hours">("hours");
   const [showEdit, setShowEdit] = useState(false);
 
   const now = Date.now();
@@ -114,6 +132,15 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
   };
 
   const handleSave = () => {
+    // Convert time estimate to minutes
+    let timeEstimate: number | undefined = undefined;
+    if (editTimeValue) {
+      const value = parseFloat(editTimeValue);
+      if (!isNaN(value)) {
+        timeEstimate = editTimeUnit === "hours" ? Math.round(value * 60) : value;
+      }
+    }
+
     onEdit(task, {
       title: editTitle,
       description: editDescription || undefined,
@@ -123,6 +150,7 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
       deadlineType: editDeadlineType,
       list: editList,
       status: editStatus,
+      timeEstimate,
     });
     setShowEdit(false);
   };
@@ -136,6 +164,8 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
     setEditDeadlineType(task.deadlineType);
     setEditList(task.list);
     setEditStatus(task.status);
+    setEditTimeValue(task.timeEstimate ? task.timeEstimate.toString() : "");
+    setEditTimeUnit("hours");
     setShowEdit(false);
   };
 
@@ -244,6 +274,34 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
                   <SelectItem value="todo">Todo</SelectItem>
                   <SelectItem value="in-progress">In Progress</SelectItem>
                   <SelectItem value="done">Done</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="edit-time" className="text-xs text-[#a1a1a1]">Time Estimate</Label>
+              <Input
+                id="edit-time"
+                type="number"
+                min="0"
+                step="0.5"
+                value={editTimeValue}
+                onChange={(e) => setEditTimeValue(e.target.value)}
+                placeholder="e.g. 2"
+                className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-[#a1a1a1]">Unit</Label>
+              <Select value={editTimeUnit} onValueChange={(v) => setEditTimeUnit(v as "minutes" | "hours")}>
+                <SelectTrigger className="mt-1 text-sm h-8 bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#141414] border-[#1f1f1f]">
+                  <SelectItem value="hours">Hours</SelectItem>
+                  <SelectItem value="minutes">Minutes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,6 +417,13 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing }: TaskCa
                 {task.list === "weddings" && "💒"}
                 {task.list === "house" && "🏠"}
                 {" "}{task.list}
+              </Badge>
+            )}
+
+            {task.timeEstimate && (
+              <Badge variant="outline" className="text-xs border-[#1f1f1f] text-[#a1a1a1]">
+                <Timer className="h-3 w-3 mr-1" />
+                {formatTimeEstimate(task.timeEstimate)}
               </Badge>
             )}
 

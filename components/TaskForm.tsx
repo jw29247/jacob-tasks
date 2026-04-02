@@ -24,6 +24,7 @@ interface TaskFormProps {
     priority: Priority;
     deadlineType: DeadlineType;
     list?: List;
+    timeEstimate?: number;
   }) => void;
   onCancel?: () => void;
   initialData?: Task;
@@ -51,9 +52,22 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
   const [list, setList] = useState<List | undefined>(
     initialData?.list
   );
+  const [timeValue, setTimeValue] = useState(
+    initialData?.timeEstimate ? initialData.timeEstimate.toString() : ""
+  );
+  const [timeUnit, setTimeUnit] = useState<"minutes" | "hours">("hours");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Convert time estimate to minutes
+    let timeEstimate: number | undefined = undefined;
+    if (timeValue) {
+      const value = parseFloat(timeValue);
+      if (!isNaN(value)) {
+        timeEstimate = timeUnit === "hours" ? Math.round(value * 60) : value;
+      }
+    }
 
     onSubmit({
       title,
@@ -63,6 +77,7 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
       priority,
       deadlineType,
       list,
+      timeEstimate,
     });
 
     if (!initialData) {
@@ -73,6 +88,7 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
       setPriority("medium");
       setDeadlineType("soft");
       setList(undefined);
+      setTimeValue("");
     }
   };
 
@@ -170,6 +186,34 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
               <SelectItem value="house">🏠 House</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="timeEstimate" className="text-xs text-[#a1a1a1]">Time Estimate</Label>
+            <Input
+              id="timeEstimate"
+              type="number"
+              min="0"
+              step="0.5"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              placeholder="e.g. 2"
+              className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-[#a1a1a1]">Unit</Label>
+            <Select value={timeUnit} onValueChange={(v) => setTimeUnit(v as "minutes" | "hours")}>
+              <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#141414] border-[#1f1f1f]">
+                <SelectItem value="hours">Hours</SelectItem>
+                <SelectItem value="minutes">Minutes</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="flex gap-2">

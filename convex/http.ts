@@ -6,7 +6,7 @@ import { v } from "convex/values";
 
 export const createTaskHttp = httpAction(async (ctx, request) => {
   const body = await request.json();
-  
+
   const task = await ctx.runMutation(internal.tasks.createInternal, {
     title: body.title,
     description: body.description,
@@ -17,9 +17,10 @@ export const createTaskHttp = httpAction(async (ctx, request) => {
     list: body.list,
     status: body.status || "todo",
     order: body.order || Date.now(),
+    timeEstimate: body.timeEstimate,
     createdBy: body.createdBy || "seed",
   });
-  
+
   return new Response(JSON.stringify({ success: true, id: task }), {
     headers: { "Content-Type": "application/json" },
   });
@@ -45,7 +46,7 @@ export const getTaskHttp = httpAction(async (ctx, request) => {
 
 export const updateTaskHttp = httpAction(async (ctx, request) => {
   const body = await request.json();
-  
+
   await ctx.runMutation(api.tasks.update, {
     id: body.id,
     startDate: body.startDate,
@@ -57,8 +58,9 @@ export const updateTaskHttp = httpAction(async (ctx, request) => {
     description: body.description,
     list: body.list,
     order: body.order,
+    timeEstimate: body.timeEstimate,
   });
-  
+
   return new Response(JSON.stringify({ success: true }), {
     headers: { "Content-Type": "application/json" },
   });

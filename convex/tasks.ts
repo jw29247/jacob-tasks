@@ -22,6 +22,7 @@ export const createInternal = internalMutation({
     )),
     status: v.optional(v.union(v.literal("todo"), v.literal("in-progress"), v.literal("done"))),
     order: v.optional(v.number()),
+    timeEstimate: v.optional(v.number()),
     createdBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -34,6 +35,7 @@ export const createInternal = internalMutation({
       deadlineType: args.deadlineType,
       list: args.list,
       order: args.order ?? Date.now(),
+      timeEstimate: args.timeEstimate,
       status: args.status ?? "todo",
       createdAt: Date.now(),
       createdBy: args.createdBy,
@@ -61,6 +63,7 @@ export const create = mutation({
       v.literal("house")
     )),
     order: v.optional(v.number()),
+    timeEstimate: v.optional(v.number()),
     createdBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -73,6 +76,7 @@ export const create = mutation({
       deadlineType: args.deadlineType,
       list: args.list,
       order: args.order ?? Date.now(),
+      timeEstimate: args.timeEstimate,
       status: "todo",
       createdAt: Date.now(),
       createdBy: args.createdBy,
@@ -104,6 +108,7 @@ export const update = mutation({
       v.literal("house")
     )),
     order: v.optional(v.number()),
+    timeEstimate: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
