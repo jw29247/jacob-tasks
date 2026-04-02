@@ -182,15 +182,9 @@ export function TaskList({
     return result;
   }, [tasks, search, listFilter, statusFilter, priorityFilter]);
 
-  // Sort by order field, fallback to urgency sort if no order
+  // Tasks are already sorted by urgency from Convex
+  // Only apply client-side reordering for drag-and-drop
   const sortedTasks = useMemo(() => {
-    const hasOrder = filteredTasks.some(t => t.order !== undefined);
-    
-    if (hasOrder) {
-      return [...filteredTasks].sort((a, b) => (a.order || 0) - (b.order || 0));
-    }
-    
-    // Fallback to original urgency sort
     return filteredTasks;
   }, [filteredTasks]);
 
