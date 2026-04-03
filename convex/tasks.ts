@@ -316,31 +316,52 @@ export const getSchedule = query({
     
     // Schedule tasks
     const schedule = [];
+    const nowDate = new Date(now);
     let currentDay = new Date(now);
     currentDay.setHours(0, 0, 0, 0);
     
-    // Determine if today is still available for work
-    const currentHour = new Date(now).getHours();
-    const currentDayOfWeek = currentDay.getDay();
-    const todayIsBankHoliday = isBankHoliday(currentDay);
+    // Calculate remaining hours for today
+    const getRemainingHoursToday = () => {
+      const currentHour = nowDate.getHours();
+      const currentMinute = nowDate.getMinutes();
+      const currentDayOfWeek = nowDate.getDay();
+      const todayIsBankHoliday = isBankHoliday(nowDate);
+      
+      const isWeekendOrHoliday = currentDayOfWeek === 0 || currentDayOfWeek === 6 || todayIsBankHoliday;
+      
+      if (isWeekendOrHoliday) {
+        // Weekend/bank holiday: 9am-6pm = 9 hours
+        const startHour = 9;
+        const endHour = 18;
+        if (currentHour >= endHour) return 0; // Past 6pm, no hours left
+        if (currentHour < startHour) return 9; // Before 9am, full day available
+        // Partial day: hours from now until 6pm
+        const hoursRemaining = endHour - currentHour - (currentMinute / 60);
+        return Math.max(0, hoursRemaining);
+      } else {
+        // Weekday: 4pm-8pm = 4 hours
+        const startHour = 16;
+        const endHour = 20;
+        if (currentHour >= endHour) return 0; // Past 8pm
+        if (currentHour < startHour) return 4; // Before 4pm, full evening available
+        // Partial evening: hours from now until 8pm
+        const hoursRemaining = endHour - currentHour - (currentMinute / 60);
+        return Math.max(0, hoursRemaining);
+      }
+    };
     
-    // Weekend/bank holiday: 9am-6pm, Weekday: 4pm-8pm
-    // Skip to next day if past working hours
-    const isWeekendOrHoliday = currentDayOfWeek === 0 || currentDayOfWeek === 6 || todayIsBankHoliday;
-    if (isWeekendOrHoliday) {
-      // Weekend/bank holiday: work until 6pm
-      if (currentHour >= 18) {
-        currentDay.setDate(currentDay.getDate() + 1);
-      }
-    } else {
-      // Weekday: work from 4pm-8pm
-      if (currentHour >= 20 || currentHour < 16) {
-        currentDay.setDate(currentDay.getDate() + 1);
-      }
+    // Determine if we should start today or tomorrow
+    const remainingToday = getRemainingHoursToday();
+    if (remainingToday <= 0) {
+      currentDay.setDate(currentDay.getDate() + 1);
     }
     
     // Track remaining hours for each day
     const dayCapacity = new Map<string, number>();
+    
+    // Seed today with actual remaining hours (not full day)
+    const todayKey = `${nowDate.getFullYear()}-${nowDate.getMonth()}-${nowDate.getDate()}`;
+    dayCapacity.set(todayKey, remainingToday);
     
     const getCapacityKey = (date: Date) => {
       return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
