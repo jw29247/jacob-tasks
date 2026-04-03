@@ -381,29 +381,38 @@ export const getSchedule = query({
       const taskStartDate = new Date(currentDay);
       let taskEndDate: Date | null = null;
       let workingDay = new Date(currentDay);
+      let iterations = 0;
+      const maxIterations = 365;
       
-      while (hoursRemaining > 0) {
-        let available = getRemainingHours(workingDay);
+      while (hoursRemaining > 0.001 && iterations < maxIterations) {
+        iterations++;
+        const key = getCapacityKey(workingDay);
+        
+        // Get remaining capacity for this day (from cache or compute)
+        let available = dayCapacity.has(key) 
+          ? dayCapacity.get(key)! 
+          : getAvailableHours(workingDay);
         
         if (available > 0) {
           const hoursToWork = Math.min(hoursRemaining, available);
           hoursRemaining -= hoursToWork;
           available -= hoursToWork;
-          
-          // Update capacity
-          dayCapacity.set(getCapacityKey(workingDay), available);
-          
+          dayCapacity.set(key, available);
           taskEndDate = new Date(workingDay);
         }
         
-        // Only move to next day if current day is exhausted
-        if (getRemainingHours(workingDay) <= 0) {
-          workingDay.setDate(workingDay.getDate() + 1);
-        }
+        // Move to next day
+        workingDay.setDate(workingDay.getDate() + 1);
       }
       
-      // Update currentDay for next task
-      currentDay = new Date(workingDay);
+      // Next task starts on the day after task ends (if capacity exhausted)
+      // or same day (if capacity remains)
+      currentDay = new Date(taskEndDate!);
+      const lastDayKey = getCapacityKey(taskEndDate!);
+      const remainingOnLastDay = dayCapacity.get(lastDayKey) || 0;
+      if (remainingOnLastDay <= 0) {
+        currentDay.setDate(currentDay.getDate() + 1);
+      }
       
       schedule.push({
         task,
