@@ -319,11 +319,24 @@ export const getSchedule = query({
     let currentDay = new Date(now);
     currentDay.setHours(0, 0, 0, 0);
     
-    // Skip to next available day if past working hours
+    // Determine if today is still available for work
     const currentHour = new Date(now).getHours();
     const currentDayOfWeek = currentDay.getDay();
-    if (currentHour >= 20 || (currentHour < 16 && currentDayOfWeek >= 1 && currentDayOfWeek <= 5)) {
-      currentDay.setDate(currentDay.getDate() + 1);
+    const todayIsBankHoliday = isBankHoliday(currentDay);
+    
+    // Weekend/bank holiday: 9am-6pm, Weekday: 4pm-8pm
+    // Skip to next day if past working hours
+    const isWeekendOrHoliday = currentDayOfWeek === 0 || currentDayOfWeek === 6 || todayIsBankHoliday;
+    if (isWeekendOrHoliday) {
+      // Weekend/bank holiday: work until 6pm
+      if (currentHour >= 18) {
+        currentDay.setDate(currentDay.getDate() + 1);
+      }
+    } else {
+      // Weekday: work from 4pm-8pm
+      if (currentHour >= 20 || currentHour < 16) {
+        currentDay.setDate(currentDay.getDate() + 1);
+      }
     }
     
     // Track remaining hours for each day
@@ -336,8 +349,7 @@ export const getSchedule = query({
     const getRemainingHours = (date: Date) => {
       const key = getCapacityKey(date);
       if (!dayCapacity.has(key)) {
-        const day = date.getDay();
-        dayCapacity.set(key, day === 0 || day === 6 ? 9 : 4);
+        dayCapacity.set(key, getAvailableHours(date));
       }
       return dayCapacity.get(key)!;
     };
