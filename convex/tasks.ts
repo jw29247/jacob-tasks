@@ -191,6 +191,72 @@ export const list = query({
   },
 });
 
+// UK Bank Holidays calculation
+const getEasterSunday = (year: number): Date => {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month, day);
+};
+
+const getFirstMonday = (year: number, month: number): Date => {
+  const date = new Date(year, month, 1);
+  const day = date.getDay();
+  const offset = day === 1 ? 0 : (8 - day) % 7;
+  return new Date(year, month, 1 + offset);
+};
+
+const getLastMonday = (year: number, month: number): Date => {
+  const lastDay = new Date(year, month + 1, 0);
+  const day = lastDay.getDay();
+  const offset = day === 1 ? 0 : (day - 1);
+  return new Date(year, month, lastDay.getDate() - offset);
+};
+
+const isBankHoliday = (date: Date): boolean => {
+  const year = date.getFullYear();
+  const holidays: Date[] = [];
+  
+  // New Year's Day
+  const newYear = new Date(year, 0, 1);
+  holidays.push(newYear);
+  
+  // Good Friday & Easter Monday
+  const easter = getEasterSunday(year);
+  holidays.push(new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2));
+  holidays.push(new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() + 1));
+  
+  // Early May Bank Holiday (first Monday in May)
+  holidays.push(getFirstMonday(year, 4));
+  
+  // Spring Bank Holiday (last Monday in May)
+  holidays.push(getLastMonday(year, 4));
+  
+  // Summer Bank Holiday (last Monday in August)
+  holidays.push(getLastMonday(year, 7));
+  
+  // Christmas Day & Boxing Day
+  holidays.push(new Date(year, 11, 25));
+  holidays.push(new Date(year, 11, 26));
+  
+  const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return holidays.some(h => {
+    const hStr = `${h.getFullYear()}-${String(h.getMonth() + 1).padStart(2, '0')}-${String(h.getDate()).padStart(2, '0')}`;
+    return hStr === dateStr;
+  });
+};
+
 // Get schedule with predicted completion dates
 export const getSchedule = query({
   handler: async (ctx) => {
@@ -235,9 +301,12 @@ export const getSchedule = query({
       .filter(t => t.status !== "done")
       .sort((a, b) => getUrgencyScore(b) - getUrgencyScore(a));
     
-    // Calculate available hours per day
+    // Calculate available hours per day (including bank holidays)
     const getAvailableHours = (date: Date) => {
       const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+      
+      // Bank holidays treated like weekends (9 hours)
+      if (isBankHoliday(date)) return 9;
       
       // Weekend: 9am-6pm = 9 hours
       if (day === 0 || day === 6) return 9;
@@ -396,3 +465,55 @@ export const updateOrder = mutation({
     await ctx.db.patch(args.id, { order: args.order });
   },
 });
+
+// Get bank holiday info for today
+export const getBankHolidayInfo = query({
+  handler: async (ctx) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    
+    // Get bank holidays for this year
+    const holidays = getUKBankHolidays(year);
+    
+    // Check if today is a bank holiday
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayHoliday = holidays.find(h => {
+      const hStr = `${h.date.getFullYear()}-${String(h.date.getMonth() + 1).padStart(2, '0')}-${String(h.date.getDate()).padStart(2, '0')}`;
+      return hStr === todayStr;
+    });
+    
+    return {
+      isBankHoliday: !!todayHoliday,
+      name: todayHoliday?.name || null,
+      year: year
+    };
+  },
+});
+
+// Helper to get UK bank holidays for a year
+function getUKBankHolidays(year: number): { date: Date; name: string }[] {
+  const holidays: { date: Date; name: string }[] = [];
+  
+  // New Year's Day
+  holidays.push({ date: new Date(year, 0, 1), name: "New Year's Day" });
+  
+  // Good Friday & Easter Monday
+  const easter = getEasterSunday(year);
+  holidays.push({ date: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2), name: "Good Friday" });
+  holidays.push({ date: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() + 1), name: "Easter Monday" });
+  
+  // Early May Bank Holiday (first Monday in May)
+  holidays.push({ date: getFirstMonday(year, 4), name: "Early May Bank Holiday" });
+  
+  // Spring Bank Holiday (last Monday in May)
+  holidays.push({ date: getLastMonday(year, 4), name: "Spring Bank Holiday" });
+  
+  // Summer Bank Holiday (last Monday in August)
+  holidays.push({ date: getLastMonday(year, 7), name: "Summer Bank Holiday" });
+  
+  // Christmas Day & Boxing Day
+  holidays.push({ date: new Date(year, 11, 25), name: "Christmas Day" });
+  holidays.push({ date: new Date(year, 11, 26), name: "Boxing Day" });
+  
+  return holidays;
+}
