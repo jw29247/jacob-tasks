@@ -53,6 +53,7 @@ interface TaskCardProps {
   isEditing?: boolean;
   predictedEndDate?: number;
   willMissDeadline?: boolean;
+  getTravelPeriod?: (dueDate?: number) => "pre" | "during" | "post" | "none";
 }
 
 function formatDate(timestamp: number | undefined): string {
@@ -88,7 +89,7 @@ function formatTimeEstimate(minutes: number | undefined): string {
   return `${hours.toFixed(1)}h`;
 }
 
-export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing, predictedEndDate, willMissDeadline }: TaskCardProps) {
+export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing, predictedEndDate, willMissDeadline, getTravelPeriod }: TaskCardProps) {
   const [editTitle, setEditTitle] = useState(task.title);
   const [editDescription, setEditDescription] = useState(task.description || "");
   const [editDueDate, setEditDueDate] = useState(
@@ -421,6 +422,23 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, isEditing, predicte
                 {" "}{task.list}
               </Badge>
             )}
+
+            {getTravelPeriod && task.dueDate && (() => {
+              const period = getTravelPeriod(task.dueDate);
+              if (period === "none") return null;
+              const travelBadges = {
+                pre: { emoji: "✈️", label: "Pre-Maldives", class: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
+                during: { emoji: "🏝️", label: "During Trip", class: "bg-red-500/20 text-red-400 border-red-500/30" },
+                post: { emoji: "🌴", label: "Post-Maldives", class: "bg-green-500/20 text-green-400 border-green-500/30" },
+              };
+              const badge = travelBadges[period];
+              if (!badge) return null;
+              return (
+                <Badge className={cn("text-xs border", badge.class)} title={badge.label}>
+                  {badge.emoji}
+                </Badge>
+              );
+            })()}
 
             {task.timeEstimate && (
               <Badge variant="outline" className="text-xs border-[#1f1f1f] text-[#a1a1a1]">

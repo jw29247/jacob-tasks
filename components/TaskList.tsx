@@ -52,6 +52,7 @@ interface TaskListProps {
   listFilter?: List | "all";
   statusFilter?: Status | "all";
   priorityFilter?: Priority | "all";
+  getTravelPeriod?: (dueDate?: number) => "pre" | "during" | "post" | "none";
 }
 
 interface SortableTaskProps {
@@ -72,9 +73,10 @@ interface SortableTaskProps {
   onDelete: (id: string) => void;
   predictedEndDate?: number;
   willMissDeadline?: boolean;
+  getTravelPeriod?: (dueDate?: number) => "pre" | "during" | "post" | "none";
 }
 
-function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDelete, predictedEndDate, willMissDeadline }: SortableTaskProps) {
+function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDelete, predictedEndDate, willMissDeadline, getTravelPeriod }: SortableTaskProps) {
   const {
     attributes,
     listeners,
@@ -374,6 +376,7 @@ export function TaskList({
                     onDelete={onDelete}
                     predictedEndDate={predictedEndDate}
                     willMissDeadline={willMissDeadline}
+                    getTravelPeriod={getTravelPeriod}
                   />
                 );
               })

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -8,8 +8,14 @@ import { TaskForm } from "@/components/TaskForm";
 import { TaskList } from "@/components/TaskList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
-import { Task, Priority, DeadlineType, List, Status } from "@/types/task";
+import { Plus, Plane, Calendar } from "lucide-react";
+import { Task, Priority, DeadlineType, List, Status, ScheduleEntry } from "@/types/task";
+
+// Maldives travel dates
+const MALDIVES_START = new Date("2026-04-18T00:00:00Z").getTime();
+const MALDIVES_END = new Date("2026-05-04T23:59:59Z").getTime();
+
+type TravelFilter = "all" | "pre-maldives" | "during-maldives" | "post-maldives";
 
 export default function Home() {
   const schedule = useQuery(api.tasks.getSchedule);
@@ -22,10 +28,30 @@ export default function Home() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-
-  // Filters - simplified
   const [search, setSearch] = useState("");
   const [listFilter, setListFilter] = useState<List | "all">("all");
+  const [travelFilter, setTravelFilter] = useState<TravelFilter>("all");
+
+  // Classify task relative to Maldives trip
+  const getTravelPeriod = (dueDate?: number): "pre" | "during" | "post" | "none" => {
+    if (!dueDate) return "none";
+    if (dueDate < MALDIVES_START) return "pre";
+    if (dueDate >= MALDIVES_START && dueDate <= MALDIVES_END) return "during";
+    return "post";
+  };
+
+  // Filter tasks by travel period
+  const filteredTasks = useMemo(() => {
+    if (!tasks) return [];
+    return tasks.filter((task: Task) => {
+      const period = getTravelPeriod(task.dueDate);
+      if (travelFilter === "all") return true;
+      if (travelFilter === "pre-maldives") return period === "pre";
+      if (travelFilter === "during-maldives") return period === "during";
+      if (travelFilter === "post-maldives") return period === "post";
+      return true;
+    });
+  }, [tasks, travelFilter]);
 
   const handleCreate = async (data: {
     title: string;
@@ -74,8 +100,8 @@ export default function Home() {
     await toggleComplete({ id: id as Id<"tasks"> });
   };
 
-  // Count active tasks
-  const activeTasks = tasks?.filter((t: Task) => t.status !== "done").length || 0;
+  // Count active tasks by travel period
+  const activeTasks = filteredTasks?.filter((t: Task) => t.status !== "done").length || 0;
 
   // Check for missed deadlines
   const hardDeadlinesMissed = schedule?.filter(s => s.willMissDeadline && s.deadlineType === "hard") || [];
@@ -88,9 +114,34 @@ export default function Home() {
     { value: "house", emoji: "🏠" },
   ];
 
+  const travelOptions: { value: TravelFilter; label: string; emoji: string }[] = [
+    { value: "all", label: "All Tasks", emoji: "📋" },
+    { value: "pre-maldives", label: "Pre-Maldives", emoji: "✈️" },
+    { value: "during-maldives", label: "During Trip", emoji: "🏝️" },
+    { value: "post-maldives", label: "Post-Maldives", emoji: "🌴" },
+  ];
+
+  const formatDate = (ts: number) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+  const maldivesDatesStr = `${formatDate(MALDIVES_START)} – ${formatDate(MALDIVES_END)}`;
+
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       <div className="max-w-3xl mx-auto p-4 md:p-6">
+        {/* Maldives Travel Banner */}
+        <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 text-cyan-100 px-4 py-3 rounded mb-4">
+          <div className="flex items-center gap-2">
+            <Plane className="h-5 w-5 text-cyan-400" />
+            <div>
+              <strong>Maldives Trip: {maldivesDatesStr}</strong>
+              <div className="text-xs text-cyan-300/80 mt-0.5">
+                Tasks due before {formatDate(MALDIVES_START)} are Pre-Maldives (priority). 
+                Tasks due after {formatDate(MALDIVES_END)} are Post-Maldives (plenty of time).
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Bank Holiday Banner */}
         {bankHolidayInfo?.isBankHoliday && (
           <div className="bg-purple-500/20 border border-purple-500 text-purple-200 px-4 py-3 rounded mb-4">
@@ -111,8 +162,8 @@ export default function Home() {
         )}
         
         {/* Compact Header */}
-        <div className="flex items-center gap-2 mb-4">
-          {/* Search - 60% width on mobile, 40% on desktop */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          {/* Search */}
           <div className="flex-1 max-w-[60%] md:max-w-[40%]">
             <Input
               placeholder="Search..."
@@ -122,7 +173,7 @@ export default function Home() {
             />
           </div>
           
-          {/* List tabs - small chips */}
+          {/* List tabs */}
           <div className="flex gap-1">
             {listOptions.map((option) => (
               <Button
@@ -136,11 +187,28 @@ export default function Home() {
               </Button>
             ))}
           </div>
+
+          {/* Travel filter */}
+          <div className="flex gap-1 ml-auto">
+            {travelOptions.map((option) => (
+              <Button
+                key={option.value}
+                size="sm"
+                variant={travelFilter === option.value ? "default" : "ghost"}
+                onClick={() => setTravelFilter(option.value)}
+                className="h-7 px-2 text-xs"
+                title={option.label}
+              >
+                {option.emoji}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Active count */}
         <div className="text-xs text-[#a1a1a1] mb-4">
           {activeTasks} active tasks
+          {travelFilter !== "all" && ` • ${travelOptions.find(o => o.value === travelFilter)?.label} only`}
         </div>
 
         {/* Add Task Form */}
@@ -173,7 +241,7 @@ export default function Home() {
           </div>
         ) : (
           <TaskList
-            tasks={tasks || []}
+            tasks={filteredTasks}
             schedule={schedule}
             onToggle={handleToggle}
             onEdit={handleEdit}
@@ -182,6 +250,7 @@ export default function Home() {
             listFilter={listFilter}
             statusFilter="all"
             priorityFilter="all"
+            getTravelPeriod={getTravelPeriod}
           />
         )}
 
@@ -196,6 +265,12 @@ export default function Home() {
           </div>
           <div className="mt-2 text-xs text-[#a1a1a1]">
             <span className="font-semibold text-[#fafafa]">Bold dates</span> = Hard deadline
+          </div>
+          <div className="mt-2 text-xs text-[#a1a1a1]">
+            <span className="font-semibold text-[#fafafa]">Travel badges:</span> 
+            <span className="ml-2">✈️ Pre-Maldives (before 18 Apr)</span>
+            <span className="ml-2">🏝️ During Trip (18 Apr – 4 May)</span>
+            <span className="ml-2">🌴 Post-Maldives (after 4 May)</span>
           </div>
         </div>
       </div>
