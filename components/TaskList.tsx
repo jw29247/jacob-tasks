@@ -125,6 +125,7 @@ function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDe
           onDelete={onDelete}
           predictedEndDate={predictedEndDate}
           willMissDeadline={willMissDeadline}
+          getTravelPeriod={getTravelPeriod}
         />
       </div>
     </div>

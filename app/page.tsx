@@ -8,7 +8,7 @@ import { TaskForm } from "@/components/TaskForm";
 import { TaskList } from "@/components/TaskList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Plane, Calendar } from "lucide-react";
+import { Plus, Plane } from "lucide-react";
 import { Task, Priority, DeadlineType, List, Status, ScheduleEntry } from "@/types/task";
 
 // Maldives travel dates
