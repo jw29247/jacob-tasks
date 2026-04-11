@@ -9,8 +9,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ["var(--font-heading)", "serif"],
+        body: ["var(--font-body)", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
+        "border-strong": "hsl(var(--border-strong))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
@@ -43,11 +48,15 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        surface: "hsl(var(--surface))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      letterSpacing: {
+        editorial: "0.12em",
       },
     },
   },

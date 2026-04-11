@@ -1,22 +1,29 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
+import type { Metadata, Viewport } from "next";
+import { DM_Serif_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const dmSerif = DM_Serif_Display({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-heading",
+  display: "swap",
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Jacob's Tasks",
-  description: "Simple task manager for Jacob",
+  description: "Task management for Jacob White",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
@@ -27,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${dmSerif.variable} ${dmSans.variable} font-body antialiased`}
       >
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>

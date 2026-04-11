@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
 import { Task, Priority, DeadlineType, List } from "@/types/task";
 
 interface TaskFormProps {
@@ -34,33 +33,19 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [dueDate, setDueDate] = useState(
-    initialData?.dueDate
-      ? new Date(initialData.dueDate).toISOString().split("T")[0]
-      : ""
+    initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split("T")[0] : ""
   );
   const [startDate, setStartDate] = useState(
-    initialData?.startDate
-      ? new Date(initialData.startDate).toISOString().split("T")[0]
-      : ""
+    initialData?.startDate ? new Date(initialData.startDate).toISOString().split("T")[0] : ""
   );
-  const [priority, setPriority] = useState<Priority>(
-    initialData?.priority || "medium"
-  );
-  const [deadlineType, setDeadlineType] = useState<DeadlineType>(
-    initialData?.deadlineType || "soft"
-  );
-  const [list, setList] = useState<List | undefined>(
-    initialData?.list
-  );
-  const [timeValue, setTimeValue] = useState(
-    initialData?.timeEstimate ? initialData.timeEstimate.toString() : ""
-  );
+  const [priority, setPriority] = useState<Priority>(initialData?.priority || "medium");
+  const [deadlineType, setDeadlineType] = useState<DeadlineType>(initialData?.deadlineType || "soft");
+  const [list, setList] = useState<List | undefined>(initialData?.list);
+  const [timeValue, setTimeValue] = useState(initialData?.timeEstimate ? initialData.timeEstimate.toString() : "");
   const [timeUnit, setTimeUnit] = useState<"minutes" | "hours">("hours");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Convert time estimate to minutes
     let timeEstimate: number | undefined = undefined;
     if (timeValue) {
       const value = parseFloat(timeValue);
@@ -68,7 +53,6 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
         timeEstimate = timeUnit === "hours" ? Math.round(value * 60) : value;
       }
     }
-
     onSubmit({
       title,
       description: description || undefined,
@@ -79,7 +63,6 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
       list,
       timeEstimate,
     });
-
     if (!initialData) {
       setTitle("");
       setDescription("");
@@ -93,76 +76,65 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
   };
 
   return (
-    <Card className="p-3 bg-[#141414] border-[#1f1f1f]">
+    <div className="bg-[#141414] border border-[#1f1f1f] rounded-lg p-4">
+      <h3 className="font-heading text-lg text-[#fafaf9] mb-3">
+        {initialData ? "Edit Task" : "New Task"}
+      </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <Label htmlFor="title" className="text-xs text-[#a1a1a1]">Task Title *</Label>
+          <Label htmlFor="title" className="text-xs text-[#737373]">What needs to be done?</Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="What needs to be done?"
+            placeholder="Task title"
             required
-            className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
+            className="mt-1 h-10 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] placeholder:text-[#404040] focus-visible:ring-amber-500/50 rounded-lg"
           />
         </div>
 
         <div>
-          <Label htmlFor="description" className="text-xs text-[#a1a1a1]">Description</Label>
+          <Label htmlFor="description" className="text-xs text-[#737373]">Details</Label>
           <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add details..."
-            className="mt-1 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
+            placeholder="Optional description..."
+            className="mt-1 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] placeholder:text-[#404040] focus-visible:ring-amber-500/50 rounded-lg"
             rows={2}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="startDate" className="text-xs text-[#a1a1a1]">Start Date</Label>
-            <Input
-              id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
-            />
+            <Label htmlFor="startDate" className="text-xs text-[#737373]">Start</Label>
+            <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1 h-9 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] rounded-lg" />
           </div>
-
           <div>
-            <Label htmlFor="dueDate" className="text-xs text-[#a1a1a1]">Due Date</Label>
-            <Input
-              id="dueDate"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] focus-visible:ring-[#5e5ce6]"
-            />
+            <Label htmlFor="dueDate" className="text-xs text-[#737373]">Due</Label>
+            <Input id="dueDate" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="mt-1 h-9 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] rounded-lg" />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <div>
-            <Label className="text-xs text-[#a1a1a1]">Priority</Label>
+            <Label className="text-xs text-[#737373]">Priority</Label>
             <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
-              <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
+              <SelectTrigger className="mt-1 h-9 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] rounded-lg">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-[#141414] border-[#1f1f1f]">
                 <SelectItem value="critical">🔴 Critical</SelectItem>
                 <SelectItem value="high">🟠 High</SelectItem>
-                <SelectItem value="medium">🔵 Medium</SelectItem>
-                <SelectItem value="low">⚪ Low</SelectItem>
+                <SelectItem value="medium">⚪ Medium</SelectItem>
+                <SelectItem value="low">⚫ Low</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
           <div>
-            <Label className="text-xs text-[#a1a1a1]">Deadline Type</Label>
+            <Label className="text-xs text-[#737373]">Deadline</Label>
             <Select value={deadlineType} onValueChange={(v) => setDeadlineType(v as DeadlineType)}>
-              <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
+              <SelectTrigger className="mt-1 h-9 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] rounded-lg">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-[#141414] border-[#1f1f1f]">
@@ -171,41 +143,31 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        <div>
-          <Label className="text-xs text-[#a1a1a1]">List</Label>
-          <Select value={list || "none"} onValueChange={(v) => setList(v === "none" ? undefined : v as List)}>
-            <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
-              <SelectValue placeholder="Select list (optional)" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#141414] border-[#1f1f1f]">
-              <SelectItem value="none">No list</SelectItem>
-              <SelectItem value="personal">👤 Personal</SelectItem>
-              <SelectItem value="weddings">💒 Weddings</SelectItem>
-              <SelectItem value="house">🏠 House</SelectItem>
-            </SelectContent>
-          </Select>
+          <div>
+            <Label className="text-xs text-[#737373]">List</Label>
+            <Select value={list || "none"} onValueChange={(v) => setList(v === "none" ? undefined : v as List)}>
+              <SelectTrigger className="mt-1 h-9 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] rounded-lg">
+                <SelectValue placeholder="List" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#141414] border-[#1f1f1f]">
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="personal">👤 Personal</SelectItem>
+                <SelectItem value="weddings">💍 Weddings</SelectItem>
+                <SelectItem value="house">🏠 House</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="timeEstimate" className="text-xs text-[#a1a1a1]">Time Estimate</Label>
-            <Input
-              id="timeEstimate"
-              type="number"
-              min="0"
-              step="0.5"
-              value={timeValue}
-              onChange={(e) => setTimeValue(e.target.value)}
-              placeholder="e.g. 2"
-              className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#5e5ce6]"
-            />
+            <Label htmlFor="timeEstimate" className="text-xs text-[#737373]">Time</Label>
+            <Input id="timeEstimate" type="number" min="0" step="0.5" value={timeValue} onChange={(e) => setTimeValue(e.target.value)} placeholder="e.g. 2" className="mt-1 h-9 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] placeholder:text-[#404040] focus-visible:ring-amber-500/50 rounded-lg" />
           </div>
           <div>
-            <Label className="text-xs text-[#a1a1a1]">Unit</Label>
+            <Label className="text-xs text-[#737373]">&nbsp;</Label>
             <Select value={timeUnit} onValueChange={(v) => setTimeUnit(v as "minutes" | "hours")}>
-              <SelectTrigger className="mt-1 h-8 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafafa]">
+              <SelectTrigger className="mt-1 h-9 text-sm bg-[#0a0a0a] border-[#1f1f1f] text-[#fafaf9] rounded-lg">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-[#141414] border-[#1f1f1f]">
@@ -216,18 +178,17 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button type="submit" className="flex-1 h-8 text-sm bg-[#5e5ce6] hover:bg-[#5e5ce6]/90">
-            {initialData ? "Update Task" : "Add Task"}
+        <div className="flex gap-2 pt-1">
+          <Button type="submit" className="flex-1 h-10 bg-amber-500 hover:bg-amber-400 text-[#0a0a0a] font-semibold rounded-lg shadow-sm shadow-amber-500/20">
+            {initialData ? "Save Changes" : "Add Task"}
           </Button>
-          
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel} className="h-8 text-sm border-[#1f1f1f] text-[#fafafa] hover:bg-[#1a1a1a]">
+            <Button type="button" variant="outline" onClick={onCancel} className="h-10 border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a] hover:text-[#fafaf9] rounded-lg">
               Cancel
             </Button>
           )}
         </div>
       </form>
-    </Card>
+    </div>
   );
 }
