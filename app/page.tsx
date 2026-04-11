@@ -9,18 +9,22 @@ import { TaskList } from "@/components/TaskList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Plane } from "lucide-react";
-import { Task, Priority, DeadlineType, List, Status, ScheduleEntry } from "@/types/task";
+import { Task, Priority, DeadlineType, List, Status } from "@/types/task";
 
 // Maldives travel dates
 const MALDIVES_START = new Date("2026-04-18T00:00:00Z").getTime();
 const MALDIVES_END = new Date("2026-05-04T23:59:59Z").getTime();
 
-type TravelFilter = "all" | "pre-maldives" | "during-maldives" | "post-maldives";
+type TravelFilter =
+  | "all"
+  | "pre-maldives"
+  | "during-maldives"
+  | "post-maldives";
 
 export default function Home() {
   const schedule = useQuery(api.tasks.getSchedule);
   const bankHolidayInfo = useQuery(api.tasks.getBankHolidayInfo);
-  const tasks = schedule?.map(s => s.task);
+  const tasks = schedule?.map((s) => s.task);
   const createTask = useMutation(api.tasks.create);
   const updateTask = useMutation(api.tasks.update);
   const deleteTask = useMutation(api.tasks.remove);
@@ -33,7 +37,9 @@ export default function Home() {
   const [travelFilter, setTravelFilter] = useState<TravelFilter>("all");
 
   // Classify task relative to Maldives trip
-  const getTravelPeriod = (dueDate?: number): "pre" | "during" | "post" | "none" => {
+  const getTravelPeriod = (
+    dueDate?: number,
+  ): "pre" | "during" | "post" | "none" => {
     if (!dueDate) return "none";
     if (dueDate < MALDIVES_START) return "pre";
     if (dueDate >= MALDIVES_START && dueDate <= MALDIVES_END) return "during";
@@ -66,16 +72,19 @@ export default function Home() {
     setShowForm(false);
   };
 
-  const handleEdit = async (task: Task, data: {
-    title: string;
-    description?: string;
-    dueDate?: number;
-    startDate?: number;
-    priority: Priority;
-    deadlineType: DeadlineType;
-    list?: List;
-    status: Status;
-  }) => {
+  const handleEdit = async (
+    task: Task,
+    data: {
+      title: string;
+      description?: string;
+      dueDate?: number;
+      startDate?: number;
+      priority: Priority;
+      deadlineType: DeadlineType;
+      list?: List;
+      status: Status;
+    },
+  ) => {
     await updateTask({
       id: task._id as Id<"tasks">,
       title: data.title,
@@ -101,11 +110,16 @@ export default function Home() {
   };
 
   // Count active tasks by travel period
-  const activeTasks = filteredTasks?.filter((t: Task) => t.status !== "done").length || 0;
+  const activeTasks =
+    filteredTasks?.filter((t: Task) => t.status !== "done").length || 0;
 
   // Check for missed deadlines
-  const hardDeadlinesMissed = schedule?.filter(s => s.willMissDeadline && s.deadlineType === "hard") || [];
-  const softDeadlinesMissed = schedule?.filter(s => s.willMissDeadline && s.deadlineType === "soft") || [];
+  const hardDeadlinesMissed =
+    schedule?.filter((s) => s.willMissDeadline && s.deadlineType === "hard") ||
+    [];
+  const softDeadlinesMissed =
+    schedule?.filter((s) => s.willMissDeadline && s.deadlineType === "soft") ||
+    [];
 
   const listOptions: { value: List | "all"; emoji: string }[] = [
     { value: "all", emoji: "📋" },
@@ -114,14 +128,19 @@ export default function Home() {
     { value: "house", emoji: "🏠" },
   ];
 
-  const travelOptions: { value: TravelFilter; label: string; emoji: string }[] = [
-    { value: "all", label: "All Tasks", emoji: "📋" },
-    { value: "pre-maldives", label: "Pre-Maldives", emoji: "✈️" },
-    { value: "during-maldives", label: "During Trip", emoji: "🏝️" },
-    { value: "post-maldives", label: "Post-Maldives", emoji: "🌴" },
-  ];
+  const travelOptions: { value: TravelFilter; label: string; emoji: string }[] =
+    [
+      { value: "all", label: "All Tasks", emoji: "📋" },
+      { value: "pre-maldives", label: "Pre-Maldives", emoji: "✈️" },
+      { value: "during-maldives", label: "During Trip", emoji: "🏝️" },
+      { value: "post-maldives", label: "Post-Maldives", emoji: "🌴" },
+    ];
 
-  const formatDate = (ts: number) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const formatDate = (ts: number) =>
+    new Date(ts).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+    });
 
   const maldivesDatesStr = `${formatDate(MALDIVES_START)} – ${formatDate(MALDIVES_END)}`;
 
@@ -135,8 +154,9 @@ export default function Home() {
             <div>
               <strong>Maldives Trip: {maldivesDatesStr}</strong>
               <div className="text-xs text-cyan-300/80 mt-0.5">
-                Tasks due before {formatDate(MALDIVES_START)} are Pre-Maldives (priority). 
-                Tasks due after {formatDate(MALDIVES_END)} are Post-Maldives (plenty of time).
+                Tasks due before {formatDate(MALDIVES_START)} are Pre-Maldives
+                (priority). Tasks due after {formatDate(MALDIVES_END)} are
+                Post-Maldives (plenty of time).
               </div>
             </div>
           </div>
@@ -145,14 +165,18 @@ export default function Home() {
         {/* Bank Holiday Banner */}
         {bankHolidayInfo?.isBankHoliday && (
           <div className="bg-purple-500/20 border border-purple-500 text-purple-200 px-4 py-3 rounded mb-4">
-            🎉 <strong>{bankHolidayInfo.name}</strong> — Bank Holiday (9 hours available)
+            🎉 <strong>{bankHolidayInfo.name}</strong> — Bank Holiday (9 hours
+            available)
           </div>
         )}
-        
+
         {/* Warning Banners */}
         {hardDeadlinesMissed.length > 0 && (
           <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded mb-4">
-            ⚠️ <strong>{hardDeadlinesMissed.length} tasks will miss hard deadlines</strong>
+            ⚠️{" "}
+            <strong>
+              {hardDeadlinesMissed.length} tasks will miss hard deadlines
+            </strong>
           </div>
         )}
         {softDeadlinesMissed.length > 0 && (
@@ -160,7 +184,7 @@ export default function Home() {
             ⚠️ {softDeadlinesMissed.length} tasks will miss soft deadlines
           </div>
         )}
-        
+
         {/* Compact Header */}
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           {/* Search */}
@@ -172,7 +196,7 @@ export default function Home() {
               className="bg-[#141414] border-[#1f1f1f] text-sm h-8 text-[#fafafa] placeholder:text-[#a1a1a1] focus-visible:ring-[#f97316]"
             />
           </div>
-          
+
           {/* List tabs */}
           <div className="flex gap-1">
             {listOptions.map((option) => (
@@ -208,7 +232,8 @@ export default function Home() {
         {/* Active count */}
         <div className="text-xs text-[#a1a1a1] mb-4">
           {activeTasks} active tasks
-          {travelFilter !== "all" && ` • ${travelOptions.find(o => o.value === travelFilter)?.label} only`}
+          {travelFilter !== "all" &&
+            ` • ${travelOptions.find((o) => o.value === travelFilter)?.label} only`}
         </div>
 
         {/* Add Task Form */}
@@ -224,8 +249,8 @@ export default function Home() {
         {/* Add Button */}
         {!showForm && !editingTaskId && (
           <div className="mb-4">
-            <Button 
-              onClick={() => setShowForm(true)} 
+            <Button
+              onClick={() => setShowForm(true)}
               className="w-full md:w-auto bg-[#f97316] hover:bg-[#f97316]/90 text-white"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -264,10 +289,11 @@ export default function Home() {
             <span>⚪ Low</span>
           </div>
           <div className="mt-2 text-xs text-[#a1a1a1]">
-            <span className="font-semibold text-[#fafafa]">Bold dates</span> = Hard deadline
+            <span className="font-semibold text-[#fafafa]">Bold dates</span> =
+            Hard deadline
           </div>
           <div className="mt-2 text-xs text-[#a1a1a1]">
-            <span className="font-semibold text-[#fafafa]">Travel badges:</span> 
+            <span className="font-semibold text-[#fafafa]">Travel badges:</span>
             <span className="ml-2">✈️ Pre-Maldives (before 18 Apr)</span>
             <span className="ml-2">🏝️ During Trip (18 Apr – 4 May)</span>
             <span className="ml-2">🌴 Post-Maldives (after 4 May)</span>

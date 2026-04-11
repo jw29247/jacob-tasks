@@ -14,7 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Task, Priority, DeadlineType, List, Status, ScheduleEntry } from "@/types/task";
+import {
+  Task,
+  Priority,
+  DeadlineType,
+  List,
+  Status,
+  ScheduleEntry,
+} from "@/types/task";
 import {
   DndContext,
   closestCenter,
@@ -37,16 +44,19 @@ interface TaskListProps {
   tasks: Task[];
   schedule?: ScheduleEntry[];
   onToggle: (id: string) => void;
-  onEdit: (task: Task, updates: {
-    title: string;
-    description?: string;
-    dueDate?: number;
-    startDate?: number;
-    priority: Priority;
-    deadlineType: DeadlineType;
-    list?: List;
-    status: Status;
-  }) => void;
+  onEdit: (
+    task: Task,
+    updates: {
+      title: string;
+      description?: string;
+      dueDate?: number;
+      startDate?: number;
+      priority: Priority;
+      deadlineType: DeadlineType;
+      list?: List;
+      status: Status;
+    },
+  ) => void;
   onDelete: (id: string) => void;
   search?: string;
   listFilter?: List | "all";
@@ -60,23 +70,36 @@ interface SortableTaskProps {
   isSelected: boolean;
   onToggleSelect: (id: string) => void;
   onToggle: (id: string) => void;
-  onEdit: (task: Task, updates: {
-    title: string;
-    description?: string;
-    dueDate?: number;
-    startDate?: number;
-    priority: Priority;
-    deadlineType: DeadlineType;
-    list?: List;
-    status: Status;
-  }) => void;
+  onEdit: (
+    task: Task,
+    updates: {
+      title: string;
+      description?: string;
+      dueDate?: number;
+      startDate?: number;
+      priority: Priority;
+      deadlineType: DeadlineType;
+      list?: List;
+      status: Status;
+    },
+  ) => void;
   onDelete: (id: string) => void;
   predictedEndDate?: number;
   willMissDeadline?: boolean;
   getTravelPeriod?: (dueDate?: number) => "pre" | "during" | "post" | "none";
 }
 
-function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDelete, predictedEndDate, willMissDeadline, getTravelPeriod }: SortableTaskProps) {
+function SortableTask({
+  task,
+  isSelected,
+  onToggleSelect,
+  onToggle,
+  onEdit,
+  onDelete,
+  predictedEndDate,
+  willMissDeadline,
+  getTravelPeriod,
+}: SortableTaskProps) {
   const {
     attributes,
     listeners,
@@ -93,7 +116,11 @@ function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDe
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative flex items-start gap-1">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative flex items-start gap-1"
+    >
       {/* Drag handle - ONLY here should have drag listeners */}
       <div
         {...attributes}
@@ -101,9 +128,24 @@ function SortableTask({ task, isSelected, onToggleSelect, onToggle, onEdit, onDe
         className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-[#1a1a1a] mt-2"
         onClick={(e) => e.stopPropagation()}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#a1a1a1]">
-          <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
-          <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-[#a1a1a1]"
+        >
+          <circle cx="9" cy="5" r="1" />
+          <circle cx="9" cy="12" r="1" />
+          <circle cx="9" cy="19" r="1" />
+          <circle cx="15" cy="5" r="1" />
+          <circle cx="15" cy="12" r="1" />
+          <circle cx="15" cy="19" r="1" />
         </svg>
       </div>
 
@@ -142,6 +184,7 @@ export function TaskList({
   listFilter = "all",
   statusFilter = "all",
   priorityFilter = "all",
+  getTravelPeriod,
 }: TaskListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
@@ -156,7 +199,7 @@ export function TaskList({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Filter tasks
@@ -169,7 +212,7 @@ export function TaskList({
       result = result.filter(
         (task) =>
           task.title.toLowerCase().includes(searchLower) ||
-          task.description?.toLowerCase().includes(searchLower)
+          task.description?.toLowerCase().includes(searchLower),
       );
     }
 
@@ -269,14 +312,14 @@ export function TaskList({
   };
 
   const displayTasks = localTasks.length > 0 ? localTasks : sortedTasks;
-  
+
   // Helper to get schedule data for a task
   const getScheduleForTask = (taskId: string) => {
     if (!schedule) return {};
-    const entry = schedule.find(s => s.task._id === taskId);
+    const entry = schedule.find((s) => s.task._id === taskId);
     return {
       predictedEndDate: entry?.predictedEndDate,
-      willMissDeadline: entry?.willMissDeadline
+      willMissDeadline: entry?.willMissDeadline,
     };
   };
 
@@ -290,13 +333,28 @@ export function TaskList({
           </span>
 
           <div className="flex flex-wrap gap-1">
-            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("todo")} className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleBulkStatus("todo")}
+              className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]"
+            >
               Todo
             </Button>
-            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("in-progress")} className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleBulkStatus("in-progress")}
+              className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]"
+            >
               In Progress
             </Button>
-            <Button size="sm" variant="outline" onClick={() => handleBulkStatus("done")} className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleBulkStatus("done")}
+              className="h-7 text-xs border-[#1f1f1f] text-[#a1a1a1] hover:bg-[#1a1a1a]"
+            >
               Done
             </Button>
 
@@ -312,7 +370,11 @@ export function TaskList({
               </SelectContent>
             </Select>
 
-            <Select onValueChange={(v) => handleBulkList(v === "none" ? undefined : v as List)}>
+            <Select
+              onValueChange={(v) =>
+                handleBulkList(v === "none" ? undefined : (v as List))
+              }
+            >
               <SelectTrigger className="w-24 h-7 text-xs bg-[#0a0a0a] border-[#1f1f1f] text-[#a1a1a1]">
                 <SelectValue placeholder="List" />
               </SelectTrigger>
@@ -324,12 +386,22 @@ export function TaskList({
               </SelectContent>
             </Select>
 
-            <Button size="sm" variant="destructive" onClick={handleBulkDelete} className="h-7 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30">
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleBulkDelete}
+              className="h-7 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30"
+            >
               Delete
             </Button>
           </div>
 
-          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-7 text-xs text-[#a1a1a1] hover:bg-[#1a1a1a]">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelectedIds(new Set())}
+            className="h-7 text-xs text-[#a1a1a1] hover:bg-[#1a1a1a]"
+          >
             Clear
           </Button>
         </div>
@@ -343,7 +415,9 @@ export function TaskList({
             onCheckedChange={toggleSelectAll}
             className="border-[#1f1f1f] data-[state=checked]:bg-[#5e5ce6] data-[state=checked]:border-[#5e5ce6]"
           />
-          <span className="text-xs text-[#a1a1a1]">Select all ({sortedTasks.length})</span>
+          <span className="text-xs text-[#a1a1a1]">
+            Select all ({sortedTasks.length})
+          </span>
         </div>
       )}
 
@@ -365,7 +439,8 @@ export function TaskList({
               </div>
             ) : (
               displayTasks.map((task) => {
-                const { predictedEndDate, willMissDeadline } = getScheduleForTask(task._id);
+                const { predictedEndDate, willMissDeadline } =
+                  getScheduleForTask(task._id);
                 return (
                   <SortableTask
                     key={task._id}
